@@ -38,6 +38,7 @@
 [ext_resource type="Script" uid="uid://c1rkraxdd6c2i" path="res://scripts/agua.gd" id="35_pnfpy"]
 [ext_resource type="Script" uid="uid://3e3qclbnafcp" path="res://scripts/juego.gd" id="36_hskkh"]
 [ext_resource type="Script" uid="uid://bbr1mhu717bus" path="res://scripts/SpawnArmas.gd" id="37_spawnarmas"]
+[ext_resource type="PackedScene" uid="uid://cqdfweb16n405" path="res://scenes/hub.tscn" id="39_47crv"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sodyg"]
 atlas = ExtResource("14_q1yjb")
@@ -538,6 +539,11 @@ position = Vector2(912, 273)
 [node name="Spawn8" type="Marker2D" parent="PuntosArmas" unique_id=609845683]
 position = Vector2(989, 483)
 
+[node name="Hub" parent="." unique_id=1506832321 node_paths=PackedStringArray("jugador", "barra_player", "contenedor_barras") instance=ExtResource("39_47crv")]
+jugador = NodePath("../Player")
+barra_player = NodePath("Control/MarginContainer/HBoxContainer/VBoxContainerPlayer/ProgressBarPlayer")
+contenedor_barras = NodePath("Control/MarginContainer/HBoxContainer/VBoxContainerEnemigos/ContenedorBarrasEnemigos")
+
 [connection signal="jugador_murio" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_jugador_murio"]
 [connection signal="solicitado_reiniciar" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_solicitado_reiniciar"]
 [connection signal="body_entered" from="Agua" to="Agua" method="_on_body_entered"]
@@ -553,3 +559,4 @@ position = Vector2(989, 483)
 [editable path="PlataformaMovil1"]
 [editable path="PlataformaMovil2"]
 [editable path="PlataformaMovil3"]
+[editable path="Hub"]

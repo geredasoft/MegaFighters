@@ -225,6 +225,7 @@ func _procesar_estado_muerto() -> void:
 func reiniciar() -> void:
 	cambiar_estado(Estado.NORMAL)
 	global_position = posicion_inicial
+	reiniciar_vida()
 
 
 # =========================================================

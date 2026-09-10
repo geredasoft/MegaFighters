@@ -542,3 +542,4 @@ func aplicar_damping(x: float = 0.0) -> void:
 func reiniciar() -> void:
 	estado = Estado.PATRULLANDO
 	global_position = posicion_inicial
+	reiniciar_vida()

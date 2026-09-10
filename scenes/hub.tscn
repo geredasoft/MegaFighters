@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://cqdfweb16n405"]
+
+[ext_resource type="Script" uid="uid://bt5blbqnlxhmg" path="res://scripts/hub.gd" id="1_qssp3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qssp3"]
+bg_color = Color(0.16470589, 0.16470589, 0.16470589, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5662981, 0.56629825, 0.56629795, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d1od2"]
+bg_color = Color(0.05684849, 0.4109395, 3.85046e-06, 1)
+
+[node name="Hub" type="CanvasLayer" unique_id=1506832321]
+script = ExtResource("1_qssp3")
+
+[node name="Control" type="Control" parent="." unique_id=1211127532]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainerPlayer" type="MarginContainer" parent="Control" unique_id=114318296]
+layout_mode = 1
+offset_left = 54.0
+offset_top = 19.0
+offset_right = 287.0
+offset_bottom = 77.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/MarginContainerPlayer" unique_id=1738018348]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="Control/MarginContainerPlayer/HBoxContainer" unique_id=491130274]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Axel"
+vertical_alignment = 1
+
+[node name="ProgressBarPlayer" type="ProgressBar" parent="Control/MarginContainerPlayer/HBoxContainer" unique_id=1996081654]
+custom_minimum_size = Vector2(160, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_qssp3")
+theme_override_styles/fill = SubResource("StyleBoxFlat_d1od2")
+
+[node name="MarginContainerEnemigos" type="MarginContainer" parent="Control" unique_id=2055121923]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="ContenedorBarrasEnemigos" type="VBoxContainer" parent="Control/MarginContainerEnemigos" unique_id=1808139402]
+layout_mode = 2
