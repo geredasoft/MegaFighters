@@ -9,14 +9,7 @@ var jugador_ini_pos: Vector2
 func _ready() -> void:
 	jugador_ini_pos = jugador.global_position
 	hide()
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-
-
-
+	
 func reiniciar() -> void:
 	jugador.reiniciador.aplicar()
 	spawn.reiniciador.aplicar()
