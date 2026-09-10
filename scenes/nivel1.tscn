@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dyig4s2w7op81"]
 
-[ext_resource type="Texture2D" uid="uid://d0j2ifcpe3mi8" path="res://assets/sprites/escenarios/fondo.png" id="1_oirhb"]
 [ext_resource type="PackedScene" uid="uid://bokvq3eb8lsij" path="res://scenes/player.tscn" id="2_27y2h"]
+[ext_resource type="Texture2D" uid="uid://dyu5oi3hksius" path="res://assets/sprites/escenarios/nivel1.png" id="2_sodyg"]
 [ext_resource type="Texture2D" uid="uid://bx2wcybu1uv7r" path="res://assets/sprites/physicalAttacks/physicalAttacksPlayerPrincipal/bam1.png" id="3_63625"]
 [ext_resource type="PackedScene" uid="uid://8yl1eeyn2aik" path="res://scenes/escalera.tscn" id="4_1ilxn"]
 [ext_resource type="Texture2D" uid="uid://cittfucgngeuv" path="res://assets/sprites/physicalAttacks/physicalAttacksPlayerPrincipal/bam2.png" id="4_27ft7"]
@@ -266,9 +266,9 @@ jugador = NodePath("../../../Player")
 spawn = NodePath("../../../EnemySpawner")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=153010119]
-position = Vector2(576, 323.99997)
-scale = Vector2(1.8603897, 1.6564101)
-texture = ExtResource("1_oirhb")
+position = Vector2(576, 321)
+scale = Vector2(0.72842634, 0.63727456)
+texture = ExtResource("2_sodyg")
 
 [node name="Player" parent="." unique_id=1225878370 instance=ExtResource("2_27y2h")]
 position = Vector2(152, 198)
