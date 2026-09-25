@@ -226,6 +226,8 @@ func reiniciar() -> void:
 	cambiar_estado(Estado.NORMAL)
 	global_position = posicion_inicial
 	reiniciar_vida()
+	manteniendo_tecla_portal = false
+	direccion_bloqueada_portal = 0.0
 
 
 # =========================================================
