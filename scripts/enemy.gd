@@ -79,6 +79,7 @@ var gravedad_actual = GRAVEDAD
 var damping_entorno = 0.0
 var posicion_inicial = 0.0
 
+var velocidad_knockback: float = 0.0
 
 # =========================================================
 # CICLO PRINCIPAL
@@ -103,24 +104,26 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y += gravedad_actual * delta
 
-	if timer_cooldown > 0.0:
-		timer_cooldown -= delta
+	# Reducir el knockback horizontal poco a poco
+	if abs(velocidad_knockback) > 0.1:
+		velocity.x = velocidad_knockback
+		velocidad_knockback = move_toward(velocidad_knockback, 0.0, DESACELERACION * delta)
+	else:
+		# Si no está recibiendo empuje, ejecuta la IA normal
+		if timer_cooldown > 0.0:
+			timer_cooldown -= delta
+		if timer_inercia_portal > 0.0:
+			timer_inercia_portal -= delta
+		if timer_cooldown_plataforma > 0.0:
+			timer_cooldown_plataforma -= delta
 
-	if timer_inercia_portal > 0.0:
-		timer_inercia_portal -= delta
+		if jugador == null or not is_instance_valid(jugador):
+			buscar_jugador()
 
-	if timer_cooldown_plataforma > 0.0:
-		timer_cooldown_plataforma -= delta
+		evaluar_transiciones()
+		procesar_comportamiento(delta)
 
-	if jugador == null or not is_instance_valid(jugador):
-		buscar_jugador()
-	
-
-	evaluar_transiciones()
-	procesar_comportamiento(delta)
-	
 	velocity *= exp(-damping_entorno * delta)
-
 	move_and_slide()
 
 
@@ -543,3 +546,17 @@ func reiniciar() -> void:
 	estado = Estado.PATRULLANDO
 	global_position = posicion_inicial
 	reiniciar_vida()
+		
+func recibir_empuje(direccion: float) -> void:
+	# Si ya está muerto, ignorar
+	if esta_muerto():
+		return
+
+	# Aplica velocidad horizontal de golpe y un pequeño salto vertical opcional
+	velocidad_knockback = direccion * 320.0
+	velocity.y = -180.0
+
+	# Opcional: interrumpir el ataque o estado actual del enemigo para que acuse recibo del golpe
+	if estado in [Estado.ATACANDO, Estado.ANTICIPANDO_ATAQUE]:
+		estado = Estado.RECUPERACION
+		timer_cooldown = 0.5

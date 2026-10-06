@@ -277,7 +277,6 @@ metadata/_edit_group_ = true
 
 [node name="AnimatedSprite2D" parent="Player" index="1" unique_id=127046454]
 sprite_frames = SubResource("SpriteFrames_se8yl")
-animation = &"fall_on_ground"
 
 [node name="Suelos" type="Node2D" parent="." unique_id=1065611799]
 

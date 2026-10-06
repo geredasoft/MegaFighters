@@ -38,6 +38,7 @@ var enemigos_actuales: int = 0
 
 var reiniciador = Reiniciador.new(reiniciar)
 
+var velocidad_knockback: float = 0.0
 
 # =========================================================
 # READY
