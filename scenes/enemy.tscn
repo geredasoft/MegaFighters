@@ -156,7 +156,8 @@ animations = [{
 "speed": 2.5
 }]
 
-[node name="Enemy" type="CharacterBody2D" unique_id=1225878370 groups=["Player"]]
+[node name="Enemy" type="CharacterBody2D" unique_id=1225878370 groups=["enemy"]]
+collision_layer = 4
 script = ExtResource("1_2mchx")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1819727561]
@@ -165,4 +166,4 @@ shape = SubResource("RectangleShape2D_oirhb")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=127046454]
 scale = Vector2(2.1428568, 1.6666656)
 sprite_frames = SubResource("SpriteFrames_80n4u")
-animation = &"fall_on_ground"
+animation = &"standing"

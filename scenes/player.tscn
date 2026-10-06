@@ -143,6 +143,9 @@ animations = [{
 "speed": 2.5
 }]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lxdaf"]
+size = Vector2(5, 5)
+
 [node name="Player" type="CharacterBody2D" unique_id=1225878370 groups=["Player"]]
 script = ExtResource("1_ujl30")
 
@@ -152,4 +155,14 @@ shape = SubResource("RectangleShape2D_oirhb")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=127046454]
 scale = Vector2(2.1428568, 1.6666656)
 sprite_frames = SubResource("SpriteFrames_80n4u")
-animation = &"roll_dive"
+animation = &"attack"
+
+[node name="HitboxAtaque" type="Area2D" parent="." unique_id=1172665077]
+collision_layer = 2
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxAtaque" unique_id=801852094]
+position = Vector2(16, -2)
+shape = SubResource("RectangleShape2D_lxdaf")
+
+[connection signal="body_entered" from="HitboxAtaque" to="." method="_on_hitbox_ataque_body_entered"]
