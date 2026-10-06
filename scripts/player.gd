@@ -1091,6 +1091,9 @@ func reiniciar() -> void:
 
 	reiniciar_vida()
 
+	manteniendo_tecla_portal = false
+	direccion_bloqueada_portal = 0.0
+
 	reproducir_animacion("standing")
 
 
