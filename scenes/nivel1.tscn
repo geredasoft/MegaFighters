@@ -282,6 +282,7 @@ sprite_frames = SubResource("SpriteFrames_se8yl")
 
 [node name="s1" type="StaticBody2D" parent="Suelos" unique_id=747353858]
 position = Vector2(178.5, 225.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s1" unique_id=1305521082]
@@ -289,6 +290,7 @@ shape = SubResource("RectangleShape2D_27y2h")
 
 [node name="s2" type="StaticBody2D" parent="Suelos" unique_id=1484835244]
 position = Vector2(64.5, 424)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s2" unique_id=2125336319]
@@ -296,6 +298,7 @@ shape = SubResource("RectangleShape2D_1ilxn")
 
 [node name="s3" type="StaticBody2D" parent="Suelos" unique_id=637019327]
 position = Vector2(233, 484.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s3" unique_id=117491425]
@@ -303,18 +306,21 @@ shape = SubResource("RectangleShape2D_smo16")
 
 [node name="s4" type="StaticBody2D" parent="Suelos" unique_id=398748689]
 position = Vector2(256.5, 370)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s4" unique_id=1567818286]
 shape = SubResource("RectangleShape2D_80n4u")
 
 [node name="s5" type="StaticBody2D" parent="Suelos" unique_id=316415718]
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Suelos/s5" unique_id=1569905276]
 polygon = PackedVector2Array(155, 400, 155, 400, 192, 367, 192, 367)
 
 [node name="s6" type="StaticBody2D" parent="Suelos" unique_id=702467627]
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Suelos/s6" unique_id=1628519888]
@@ -322,6 +328,7 @@ polygon = PackedVector2Array(97, 414, 179, 474, 177, 474, 177, 474, 177, 494, 16
 
 [node name="s7" type="StaticBody2D" parent="Suelos" unique_id=1516526761]
 position = Vector2(481, 217.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s7" unique_id=1024291481]
@@ -330,6 +337,7 @@ shape = SubResource("RectangleShape2D_buaql")
 
 [node name="s8" type="StaticBody2D" parent="Suelos" unique_id=184745878]
 position = Vector2(594.5, 334)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s8" unique_id=44764688]
@@ -337,6 +345,7 @@ shape = SubResource("RectangleShape2D_kcnc8")
 
 [node name="s9" type="StaticBody2D" parent="Suelos" unique_id=1590351844]
 position = Vector2(725.5, 504.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s9" unique_id=1337685370]
@@ -344,6 +353,7 @@ shape = SubResource("RectangleShape2D_b66fj")
 
 [node name="s10" type="StaticBody2D" parent="Suelos" unique_id=327834279]
 position = Vector2(932.5, 299.25)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s10" unique_id=1002545541]
@@ -351,6 +361,7 @@ shape = SubResource("RectangleShape2D_2rerw")
 
 [node name="s11" type="StaticBody2D" parent="Suelos" unique_id=965040117]
 position = Vector2(1022.5, 507.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s11" unique_id=377863030]
@@ -360,6 +371,7 @@ shape = SubResource("RectangleShape2D_2mk4e")
 
 [node name="p1" type="StaticBody2D" parent="Paredes" unique_id=1043969393]
 position = Vector2(49, 126.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p1" unique_id=19364068]
@@ -367,6 +379,7 @@ shape = SubResource("RectangleShape2D_j2psv")
 
 [node name="p2" type="StaticBody2D" parent="Paredes" unique_id=304252979]
 position = Vector2(184, 86.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p2" unique_id=1056073895]
@@ -374,6 +387,7 @@ shape = SubResource("RectangleShape2D_ma4t3")
 
 [node name="p3" type="StaticBody2D" parent="Paredes" unique_id=2116162982]
 position = Vector2(48, 301)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p3" unique_id=1551490488]
@@ -381,6 +395,7 @@ shape = SubResource("RectangleShape2D_nkjvb")
 
 [node name="p4" type="StaticBody2D" parent="Paredes" unique_id=658180832]
 position = Vector2(314.5, 106)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p4" unique_id=2068291334]
@@ -388,6 +403,7 @@ shape = SubResource("RectangleShape2D_kkeat")
 
 [node name="p5" type="StaticBody2D" parent="Paredes" unique_id=109556878]
 position = Vector2(552, 46.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p5" unique_id=2116748498]
@@ -395,6 +411,7 @@ shape = SubResource("RectangleShape2D_5u7j1")
 
 [node name="p6" type="StaticBody2D" parent="Paredes" unique_id=1184148465]
 position = Vector2(789, 142.5)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p6" unique_id=1666602784]
@@ -402,6 +419,7 @@ shape = SubResource("RectangleShape2D_80s5i")
 
 [node name="p7" type="StaticBody2D" parent="Paredes" unique_id=1481702950]
 position = Vector2(928.5, 149.25)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p7" unique_id=1735226286]
@@ -409,6 +427,7 @@ shape = SubResource("RectangleShape2D_xjhar")
 
 [node name="p8" type="StaticBody2D" parent="Paredes" unique_id=510295387]
 position = Vector2(1072.5, 194)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p8" unique_id=1695842138]
@@ -416,6 +435,7 @@ shape = SubResource("RectangleShape2D_ofuir")
 
 [node name="p9" type="StaticBody2D" parent="Paredes" unique_id=1348195582]
 position = Vector2(1072.75, 379)
+collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p9" unique_id=768992024]
@@ -499,6 +519,7 @@ position = Vector2(1016, 481)
 [node name="Agua" type="Area2D" parent="." unique_id=28014809]
 position = Vector2(576, 586)
 scale = Vector2(1.8603897, 1.6564101)
+collision_mask = 6
 gravity_space_override = 3
 gravity_point_center = Vector2(0, -1)
 gravity_direction = Vector2(0, -1)
