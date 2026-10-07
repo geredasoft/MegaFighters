@@ -2,48 +2,195 @@ extends Area2D
 
 @export var otro_portal: Area2D
 
-# Variable para bloquear este portal específico por unos milisegundos tras usarlo
-var _en_cooldown := false
+@export_category("Teletransporte")
+@export var tiempo_bloqueo_por_cuerpo: float = 0.45
+
+# Guarda el tiempo de desbloqueo de CADA cuerpo.
+# Clave: instance_id del cuerpo
+# Valor: tiempo en milisegundos
+var _bloqueos: Dictionary = {}
+
+
+# =========================================================
+# CUANDO UN CUERPO ENTRA AL PORTAL
+# =========================================================
 
 func _on_body_entered(body: Node2D) -> void:
-	if _en_cooldown:
+
+	if not _es_viajero_valido(body):
 		return
 
-	var es_viajero := body.is_in_group("player") or body.is_in_group("Player") or body.is_in_group("enemy")
-	if not es_viajero:
+	if not is_instance_valid(body):
+		return
+
+	# Este cuerpo todavía está bloqueado en este portal.
+	if _esta_bloqueado(body):
 		return
 
 	if otro_portal == null:
-		push_warning(name + ": No se ha asignado otro_portal.")
+		push_warning(
+			name + ": No se ha asignado otro_portal."
+		)
 		return
 
-	var spawn_point := otro_portal.get_node_or_null("SpawnPoint") as Node2D
-	if spawn_point == null:
-		push_warning(otro_portal.name + ": No existe SpawnPoint.")
+	if not is_instance_valid(otro_portal):
+		push_warning(
+			name + ": otro_portal ya no es válido."
+		)
 		return
+
+	var spawn_point := (
+		otro_portal.get_node_or_null("SpawnPoint")
+		as Node2D
+	)
+
+	if spawn_point == null:
+		push_warning(
+			otro_portal.name + ": No existe SpawnPoint."
+		)
+		return
+
+
+	# =====================================================
+	# OBTENER VELOCIDAD
+	# =====================================================
 
 	var nueva_velocidad := Vector2.ZERO
+
 	if body is CharacterBody2D:
-		nueva_velocidad = -body.velocity
 
-	# 1. Poner en cooldown al portal de DESTINO para que no te devuelva al entrar
-	otro_portal.activar_cooldown(0.3)
+		var personaje := body as CharacterBody2D
 
-	# 2. Teletransportar
+		nueva_velocidad = -personaje.velocity
+
+
+	# =====================================================
+	# BLOQUEAR SOLO A ESTE CUERPO
+	# =====================================================
+
+	bloquear_cuerpo(
+		body,
+		tiempo_bloqueo_por_cuerpo
+	)
+
+	# También bloquearlo en el portal destino.
+	if otro_portal.has_method("bloquear_cuerpo"):
+
+		otro_portal.call(
+			"bloquear_cuerpo",
+			body,
+			tiempo_bloqueo_por_cuerpo
+		)
+
+
+	# =====================================================
+	# TELETRANSPORTE
+	# =====================================================
+
 	if body.has_method("aplicar_efecto_portal"):
-		body.aplicar_efecto_portal(spawn_point.global_position, nueva_velocidad)
+
+		body.aplicar_efecto_portal(
+			spawn_point.global_position,
+			nueva_velocidad
+		)
+
 	else:
-		body.global_position = spawn_point.global_position
+
+		body.global_position = (
+			spawn_point.global_position
+		)
+
 		if body is CharacterBody2D:
-			body.velocity = nueva_velocidad
+
+			var personaje := body as CharacterBody2D
+
+			personaje.velocity = nueva_velocidad
 
 
-func activar_cooldown(tiempo: float) -> void:
-	_en_cooldown = true
-	await get_tree().create_timer(tiempo).timeout
-	_en_cooldown = false
+# =========================================================
+# VALIDAR VIAJERO
+# =========================================================
+
+func _es_viajero_valido(body: Node2D) -> bool:
+
+	if body == null:
+		return false
+
+	return (
+		body.is_in_group("Player")
+		or body.is_in_group("player")
+		or body.is_in_group("enemy")
+	)
 
 
-# Ya no necesitamos _on_body_exited para limpiar nada complejo
-func _on_body_exited(body: Node2D) -> void:
+# =========================================================
+# BLOQUEAR CUERPO
+# =========================================================
+
+func bloquear_cuerpo(
+	body: Node2D,
+	duracion: float
+) -> void:
+
+	if body == null:
+		return
+
+	if not is_instance_valid(body):
+		return
+
+	var id := body.get_instance_id()
+
+	var ahora := Time.get_ticks_msec()
+
+	var nuevo_vencimiento := (
+		ahora
+		+ int(duracion * 1000.0)
+	)
+
+	var vencimiento_actual := int(
+		_bloqueos.get(id, 0)
+	)
+
+	# Nunca reducir un bloqueo existente.
+	_bloqueos[id] = maxi(
+		vencimiento_actual,
+		nuevo_vencimiento
+	)
+
+
+# =========================================================
+# COMPROBAR BLOQUEO
+# =========================================================
+
+func _esta_bloqueado(body: Node2D) -> bool:
+
+	if body == null:
+		return false
+
+	var id := body.get_instance_id()
+
+	if not _bloqueos.has(id):
+		return false
+
+	var vencimiento := int(
+		_bloqueos[id]
+	)
+
+	var ahora := Time.get_ticks_msec()
+
+	if ahora >= vencimiento:
+
+		_bloqueos.erase(id)
+
+		return false
+
+	return true
+
+
+# =========================================================
+# BODY EXITED
+# =========================================================
+
+func _on_body_exited(_body: Node2D) -> void:
+
 	pass

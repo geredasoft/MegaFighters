@@ -6,6 +6,7 @@
 size = Vector2(21.5, 149)
 
 [node name="Escalera" type="Area2D" unique_id=997264052]
+collision_mask = 6
 script = ExtResource("1_ft1ra")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2140339873]
