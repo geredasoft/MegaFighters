@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cfvpv1b47sc1"]
+
+[node name="Jugar" type="Button" unique_id=975817531]
+custom_minimum_size = Vector2(300, 100)
+text = "Jugar"

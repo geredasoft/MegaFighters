@@ -1,0 +1,31 @@
+[gd_resource type="Theme" format=3 uid="uid://dgdpytanpjgv5"]
+
+[ext_resource type="StyleBox" uid="uid://gg6qi7pbdd8a" path="res://resources/panel_container_box_flat.tres" id="1_wihst"]
+[ext_resource type="FontFile" uid="uid://6csuvqecn00j" path="res://fonts/fs-pixel-sans-unicode-regular.ttf" id="2_jvdq3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jvdq3"]
+bg_color = Color(0, 0.78431374, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eux55"]
+bg_color = Color(0, 0.78431374, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_31g41"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x2lp5"]
+bg_color = Color(1, 1, 1, 1)
+
+[resource]
+default_font = ExtResource("2_jvdq3")
+default_font_size = 36
+Button/colors/font_pressed_color = Color(0, 0, 0, 1)
+Button/colors/icon_pressed_color = Color(1, 1, 1, 1)
+Button/font_sizes/font_size = 60
+Button/styles/focus = SubResource("StyleBoxFlat_jvdq3")
+Button/styles/hover = SubResource("StyleBoxFlat_eux55")
+Button/styles/normal = SubResource("StyleBoxFlat_31g41")
+Button/styles/pressed = SubResource("StyleBoxFlat_x2lp5")
+PanelContainer/styles/panel = ExtResource("1_wihst")
+RichTextLabel/colors/default_color = Color(1, 1, 1, 1)
+RichTextLabelType/base_type = &"RichTextLabel"
+RichTextLabelType/font_sizes/normal_font_size = 144
