@@ -67,6 +67,7 @@ const VELOCIDAD_ATAQUE := 80.0
  
 # Empuje del golpe. 
 const FUERZA_EMPUJE_ATAQUE := 1.0 
+const DAÑO_ATAQUE := 20
  
 const HITBOX_OFFSET_X := 16.0 
  
@@ -1103,14 +1104,25 @@ func _on_hitbox_ataque_area_entered(area: Area2D) -> void:
 	print("Dirección: ", direccion_empuje) 
 	print("========================================") 
  
-	# ----------------------------------------------------- 
-	# APLICAR EMPUJE 
-	# ----------------------------------------------------- 
- 
-	if enemigo.has_method("recibir_empuje"): 
- 
-		enemigo.recibir_empuje( 
-			direccion_empuje * FUERZA_EMPUJE_ATAQUE 
+	# -----------------------------------------------------
+	# APLICAR DAÑO
+	# -----------------------------------------------------
+
+	if enemigo.has_method("recibir_dano"):
+
+		enemigo.recibir_dano(
+			DAÑO_ATAQUE,
+			self
+		)
+
+	# -----------------------------------------------------
+	# APLICAR EMPUJE
+	# -----------------------------------------------------
+
+	if enemigo.has_method("recibir_empuje"):
+
+		enemigo.recibir_empuje(
+			direccion_empuje * FUERZA_EMPUJE_ATAQUE
 		) 
 		 
 func recibir_empuje( 
