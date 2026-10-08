@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://dgw14q2us4umn"]
+
+[ext_resource type="PackedScene" uid="uid://cfvpv1b47sc1" path="res://scenes/iu/boton.tscn" id="1_i85hu"]
+[ext_resource type="Theme" uid="uid://dgdpytanpjgv5" path="res://resources/menu_estilo.tres" id="2_mk4g1"]
+[ext_resource type="Script" uid="uid://j4ico23l6ekb" path="res://scenes/iu/boton_jugar.gd" id="3_486ty"]
+[ext_resource type="Script" uid="uid://d0cy3664gv1wp" path="res://scripts/iu/boton_salir.gd" id="3_iep14"]
+
+[node name="MenuPrincipal" type="Control" unique_id=527399479]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_mk4g1")
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=296868030]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=167164209]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Titulo" type="RichTextLabel" parent="Panel/VBoxContainer" unique_id=188281604]
+layout_mode = 2
+theme_type_variation = &"RichTextLabelType"
+text = "Megafighters"
+fit_content = true
+autowrap_mode = 0
+
+[node name="Jugar" parent="Panel/VBoxContainer" unique_id=975817531 instance=ExtResource("1_i85hu")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("2_mk4g1")
+script = ExtResource("3_486ty")
+
+[node name="Salir" parent="Panel/VBoxContainer" unique_id=799865136 instance=ExtResource("1_i85hu")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Salir "
+script = ExtResource("3_iep14")
+
+[connection signal="pressed" from="Panel/VBoxContainer/Salir" to="Panel/VBoxContainer/Salir" method="_on_pressed"]
