@@ -1,3 +1,4 @@
+class_name EnemySpawner
 extends Node2D
 
 
@@ -24,6 +25,13 @@ const ENEMY_SCENE: PackedScene = preload(
 
 @export var maximo_enemigos: int = 10
 
+# =========================================================
+# SEÑALES
+# =========================================================
+
+signal enemy_spawned(enemy: Danable)
+signal enemy_removed(enemy: Danable)
+signal enemies_reset()
 
 # =========================================================
 # ESTADO
@@ -197,58 +205,55 @@ func spawn_enemy() -> void:
 	enemy.global_position = spawn_point.global_position
 
 
-	# =====================================================
-	# REGISTRAR SPAWN POINT COMO OCUPADO
-	# =====================================================
-
 	enemigos_por_spawn[spawn_point] = enemy
-
-
-	# =====================================================
-	# CONTADOR
-	# =====================================================
-
 	enemigos_actuales += 1
 
-
-	# =====================================================
-	# DETECTAR ELIMINACIÓN
-	# =====================================================
-
 	enemy.tree_exited.connect(
-		_on_enemy_tree_exited.bind(spawn_point)
+		_on_enemy_tree_exited.bind(spawn_point, enemy)
 	)
 
+	enemy_spawned.emit(enemy as Danable)
 
 # =========================================================
 # ENEMIGO ELIMINADO
 # =========================================================
 
-func _on_enemy_tree_exited(spawn_point: Marker2D) -> void:
+func _on_enemy_tree_exited(
+	spawn_point: Marker2D,
+	enemy: CharacterBody2D
+) -> void:
 
-	# Liberar el SpawnPoint
-
-	if enemigos_por_spawn.has(spawn_point):
-
+	# Solo eliminar la referencia si corresponde al enemigo registrado.
+	if enemigos_por_spawn.get(spawn_point) == enemy:
 		enemigos_por_spawn.erase(spawn_point)
 
+	enemigos_actuales = max(enemigos_actuales - 1, 0)
 
-	# Actualizar contador
-
-	enemigos_actuales = maxi(
-		enemigos_actuales - 1,
-		0
-	)
+	if enemy is Danable:
+		enemy_removed.emit(enemy as Danable)
 
 # =========================================================
 # REINICIAR ESTADO DEL SPAWN
 # =========================================================
-func reiniciar():
-	var enemies = enemigos_por_spawn.values()
-	
-	for en in enemies:
-		en.queue_free()
-		
+func reiniciar() -> void:
+
+	# Guardar referencias antes de limpiar el diccionario.
+	var enemigos: Array = enemigos_por_spawn.values()
+
+	# Limpiar inmediatamente el estado interno del Spawner.
+	enemigos_por_spawn.clear()
+	enemigos_actuales = 0
+
+	# Avisar al Hub que todos los enemigos actuales serán descartados.
+	enemies_reset.emit()
+
+	# Liberar los enemigos actuales.
+	for enemy in enemigos:
+		if is_instance_valid(enemy):
+			enemy.queue_free()
+
+	# Esperar a que Godot procese queue_free().
 	await get_tree().process_frame
-	
+
+	# Crear nuevamente la cantidad inicial.
 	crear_enemigos_iniciales()

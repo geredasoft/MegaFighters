@@ -9,23 +9,37 @@ signal vida_cambiada(actual: int, maxima: int)
 @abstract func morir() -> void
 @abstract func esta_muerto() -> bool
 
-func recibir_dano(cantidad: int, atacante: Node2D = null) -> void:
+func recibir_dano(
+	cantidad: int,
+	atacante: Node2D = null
+) -> void:
+
 	if esta_muerto():
 		return
-		
-	# Evitar daño entre entidades de la misma facción (ej. enemigo a enemigo)
+
+	if cantidad <= 0:
+		return
+
+	# Evitar daño entre entidades de la misma facción.
 	if atacante and _es_misma_faccion(atacante):
 		return
 
-	vida_actual = maxi(vida_actual - cantidad, 0)
-	vida_cambiada.emit(vida_actual, vida_maxima)
+	vida_actual = maxi(
+		vida_actual - cantidad,
+		0
+	)
+
+	vida_cambiada.emit(
+		vida_actual,
+		vida_maxima
+	)
 
 	if vida_actual <= 0:
 		morir()
 
 func _es_misma_faccion(otro: Node2D) -> bool:
-	var soy_player := self.is_in_group("player")
-	var otro_es_player := otro.is_in_group("player")
+	var soy_player := self.is_in_group("Player")
+	var otro_es_player := otro.is_in_group("Player")
 	var soy_enemigo := self.is_in_group("enemy")
 	var otro_es_enemigo := otro.is_in_group("enemy")
 	

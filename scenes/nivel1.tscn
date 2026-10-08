@@ -254,7 +254,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Mensajes" type="RichTextLabel" parent="Control/CenterContainer" unique_id=1003891864 node_paths=PackedStringArray("jugador", "spawn")]
+[node name="Mensajes" type="RichTextLabel" parent="Control/CenterContainer" unique_id=1003891864 node_paths=PackedStringArray("jugador", "enemy_spawner")]
 z_index = 4096
 layout_mode = 2
 text = "Juego terminado
@@ -264,7 +264,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 script = ExtResource("36_hskkh")
 jugador = NodePath("../../../Player")
-spawn = NodePath("../../../EnemySpawner")
+enemy_spawner = NodePath("../../../EnemySpawner")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=153010119]
 position = Vector2(576, 321)
@@ -559,8 +559,9 @@ position = Vector2(912, 273)
 [node name="Spawn8" type="Marker2D" parent="PuntosArmas" unique_id=609845683]
 position = Vector2(989, 483)
 
-[node name="Hub" parent="." unique_id=1506832321 node_paths=PackedStringArray("jugador") instance=ExtResource("39_47crv")]
+[node name="Hub" parent="." unique_id=1506832321 node_paths=PackedStringArray("jugador", "enemy_spawner") instance=ExtResource("39_47crv")]
 jugador = NodePath("../Player")
+enemy_spawner = NodePath("../EnemySpawner")
 
 [connection signal="jugador_murio" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_jugador_murio"]
 [connection signal="solicitado_reiniciar" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_solicitado_reiniciar"]

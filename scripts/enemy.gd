@@ -106,6 +106,8 @@ const FRAME_ATAQUE_FIN: int = 3
 const IMPULSO_ATAQUE: float = 85.0
 const FRENADO_ATAQUE: float = 900.0
 
+const DAÑO_ATAQUE: int = 10
+
 const FUERZA_EMPUJE_ATAQUE: float = 1.0
 const FUERZA_EMPUJE_VERTICAL: float = -120.0
 
@@ -1374,7 +1376,18 @@ func procesar_hurtbox_player(area: Area2D) -> void:
 		direccion_empuje = -1.0
 
 	# -----------------------------------------------------
-	# APLICAR DAÑO / EMPUJE
+	# APLICAR DAÑO
+	# -----------------------------------------------------
+
+	if objetivo.has_method("recibir_dano"):
+
+		objetivo.recibir_dano(
+			DAÑO_ATAQUE,
+			self
+		)
+
+	# -----------------------------------------------------
+	# APLICAR EMPUJE
 	# -----------------------------------------------------
 
 	if objetivo.has_method("recibir_empuje"):
@@ -1384,7 +1397,6 @@ func procesar_hurtbox_player(area: Area2D) -> void:
 			* FUERZA_EMPUJE_ATAQUE,
 			FUERZA_EMPUJE_VERTICAL
 		)
-
 
 # =========================================================
 # 41. COMBATE - OVERLAPS EXISTENTES
