@@ -27,6 +27,8 @@ func _ready() -> void:
 	if jugador != null:
 		jugador_ini_pos = jugador.global_position
 
+	MusicManager.reproducir_musica()
+
 	hide()
 
 
