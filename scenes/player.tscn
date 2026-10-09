@@ -174,5 +174,3 @@ collision_mask = 32
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1685758176]
 shape = SubResource("RectangleShape2D_gjbk2")
-
-[connection signal="body_entered" from="HitboxAtaque" to="." method="_on_hitbox_ataque_body_entered"]

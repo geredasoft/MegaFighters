@@ -1,35 +1,62 @@
 extends RichTextLabel
 class_name Juego
 
+const GameFlowControllerScript = preload(
+	"res://scripts/components/game_flow_controller.gd"
+)
+const LevelMessageViewScript = preload("res://scripts/iu/level_message_view.gd")
+
+var _controlador_flujo
+var _vista_mensaje
 
 # =========================================================
 # REFERENCIAS
 # =========================================================
 
 @export var jugador: Danable
+
 @export var enemy_spawner: EnemySpawner
 
 
 # =========================================================
-# ESTADO
+# NIVELES
 # =========================================================
 
-var jugador_ini_pos: Vector2
-var reiniciando: bool = false
+@export_category("Niveles")
+
+@export var escena_siguiente: PackedScene
+@export_multiline var mensaje_victoria: String = (
+	"¡NIVEL 1 COMPLETADO!\n\nPresiona ENTER para continuar al Nivel 2."
+)
+@export_range(0.0, 60.0, 0.5) var espera_transicion_victoria: float = 0.0
 
 
 # =========================================================
-# READY
+# CONTROLADOR
 # =========================================================
 
 func _ready() -> void:
+	_vista_mensaje = LevelMessageViewScript.new(self)
+	_controlador_flujo = GameFlowControllerScript.new(
+		_vista_mensaje,
+		get_tree(),
+		jugador,
+		enemy_spawner,
+		escena_siguiente,
+		mensaje_victoria,
+		espera_transicion_victoria
+	)
 
-	if jugador != null:
-		jugador_ini_pos = jugador.global_position
+	if enemy_spawner != null:
+		if not enemy_spawner.todos_los_enemigos_derrotados.is_connected(
+			_on_todos_los_enemigos_derrotados
+		):
+			enemy_spawner.todos_los_enemigos_derrotados.connect(
+				_on_todos_los_enemigos_derrotados
+			)
 
 	MusicManager.reproducir_musica()
-
-	hide()
+	_vista_mensaje.call("ocultar")
 
 
 # =========================================================
@@ -37,13 +64,7 @@ func _ready() -> void:
 # =========================================================
 
 func _on_player_jugador_murio() -> void:
-
-	if reiniciando:
-		return
-
-	print("💀 Jugador murió.")
-
-	show()
+	_controlador_flujo.jugador_murio()
 
 
 # =========================================================
@@ -51,33 +72,31 @@ func _on_player_jugador_murio() -> void:
 # =========================================================
 
 func _on_player_solicitado_reiniciar() -> void:
-
-	if reiniciando:
-		return
-
-	print("🔄 Jugador solicitó reiniciar.")
-
-	reiniciar()
+	_controlador_flujo.jugador_solicito_reinicio()
 
 
 # =========================================================
-# INPUT MANUAL
+# NIVEL COMPLETADO
+# =========================================================
+
+func _on_todos_los_enemigos_derrotados() -> void:
+	_controlador_flujo.enemigos_derrotados()
+
+
+# =========================================================
+# INPUT
 # =========================================================
 
 func _unhandled_input(event: InputEvent) -> void:
+	_controlador_flujo.procesar_entrada(event)
 
-	if not visible:
-		return
 
-	if reiniciando:
-		return
+# =========================================================
+# PASAR A LA SIGUIENTE ESCENA
+# =========================================================
 
-	if event is InputEventKey:
-
-		if event.pressed and not event.echo:
-
-			if event.keycode == KEY_R:
-				reiniciar()
+func pasar_a_la_siguiente_escena() -> void:
+	_controlador_flujo.pasar_a_la_siguiente_escena()
 
 
 # =========================================================
@@ -85,57 +104,4 @@ func _unhandled_input(event: InputEvent) -> void:
 # =========================================================
 
 func reiniciar() -> void:
-
-	if reiniciando:
-		return
-
-	reiniciando = true
-
-	# Ocultar inmediatamente el mensaje.
-	hide()
-
-	print("========================================")
-	print("🔄 REINICIANDO JUEGO")
-	print("========================================")
-
-
-	# =====================================================
-	# REINICIAR PLAYER
-	# =====================================================
-
-	if jugador != null:
-
-		if jugador.has_method("reiniciar"):
-			jugador.reiniciar()
-
-		else:
-			jugador.global_position = jugador_ini_pos
-
-
-	# =====================================================
-	# REINICIAR ENEMIGOS
-	# =====================================================
-
-	if enemy_spawner != null:
-
-		await enemy_spawner.reiniciar()
-
-	else:
-
-		push_error(
-			"Juego: EnemySpawner no está asignado."
-		)
-
-		reiniciando = false
-		return
-
-
-	# =====================================================
-	# FINALIZAR
-	# =====================================================
-
-	reiniciando = false
-
-	print("========================================")
-	print("✅ JUEGO REINICIADO")
-	print("========================================")
+	await _controlador_flujo.reiniciar()

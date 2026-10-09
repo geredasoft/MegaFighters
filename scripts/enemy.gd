@@ -1,41 +1,55 @@
 extends Danable
 
+const EnemyWorldSensorScript = preload(
+	"res://scripts/components/enemy_world_sensor.gd"
+)
+const SpriteAnimationControllerScript = preload(
+	"res://scripts/components/sprite_animation_controller.gd"
+)
+const EnemySeparationControllerScript = preload(
+	"res://scripts/components/enemy_separation_controller.gd"
+)
+const EnemyPlatformControllerScript = preload(
+	"res://scripts/components/enemy_platform_controller.gd"
+)
+const CombatHitProcessorScript = preload(
+	"res://scripts/components/combat_hit_processor.gd"
+)
+const CharacterPhysicsControllerScript = preload(
+	"res://scripts/components/character_physics_controller.gd"
+)
+const EnemyPlatformDecisionControllerScript = preload(
+	"res://scripts/components/enemy_platform_decision_controller.gd"
+)
+const EnemyCombatControllerScript = preload(
+	"res://scripts/components/enemy_combat_controller.gd"
+)
+const EnemyPlatformMotionControllerScript = preload(
+	"res://scripts/components/enemy_platform_motion_controller.gd"
+)
+const EnemyNavigationControllerScript = preload(
+	"res://scripts/components/enemy_navigation_controller.gd"
+)
+const EnemyAttackControllerScript = preload(
+	"res://scripts/components/enemy_attack_controller.gd"
+)
+const EnemyStateDecisionControllerScript = preload(
+	"res://scripts/components/enemy_state_decision_controller.gd"
+)
+const EnemyLifecycleControllerScript = preload(
+	"res://scripts/components/enemy_lifecycle_controller.gd"
+)
+const EnemyPortalControllerScript = preload(
+	"res://scripts/components/enemy_portal_controller.gd"
+)
+
 
 # =========================================================
-# ENEMY
-# IA, MOVIMIENTO, COMBATE, PLATAFORMAS, PORTALES Y ENTORNO
+# ENEMY: composition root para estado, señales y API del actor.
 # =========================================================
 #
-# RESPONSABILIDADES:
-#
-# 1. Movimiento y física
-# 2. IA y máquina de estados
-# 3. Percepción del Player
-# 4. Patrulla
-# 5. Persecución
-# 6. Posicionamiento de combate
-# 7. Ataque
-# 8. Hitbox / Hurtbox
-# 9. Knockback
-# 10. Plataformas móviles
-# 11. Portales
-# 12. Detección de entorno
-# 13. Animaciones
-# 14. Ciclo de vida
-# 15. Integración con agua / damping
-#
-# PRINCIPIOS:
-#
-# - El Enemy solamente ataca al Player.
-# - Los Enemy no pueden golpearse entre ellos.
-# - El combate utiliza Hitbox + Hurtbox.
-# - El ataque posee una ventana activa por frames.
-# - El Enemy intenta mantener una distancia razonable.
-# - Evita precipicios y paredes.
-# - Puede saltar obstáculos.
-# - Puede utilizar plataformas móviles.
-# - Respeta portales.
-# - Conserva compatibilidad con agua / damping.
+# Los componentes encapsulan navegación, combate, percepción, plataformas,
+# portales y ciclo de vida. Aquí se conectan a los nodos y al contrato Danable.
 #
 # =========================================================
 
@@ -72,7 +86,6 @@ const DISTANCIA_RETROCESO: float = 25.0
 # =========================================================
 
 const DISTANCIA_SEPARACION_ENEMY: float = 48.0
-const DISTANCIA_SEPARACION_MINIMA: float = 32.0
 
 const FUERZA_SEPARACION_ENEMY: float = 180.0
 
@@ -162,12 +175,13 @@ const FUERZA_KNOCKBACK_VERTICAL: float = -180.0
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
+@onready var _controlador_animacion = SpriteAnimationControllerScript.new(sprite)
+
 @onready var hitbox_ataque: Area2D = $HitboxAtaque
 
 @onready var collision_hitbox: CollisionShape2D = (
 	$HitboxAtaque/CollisionShape2D
 )
-
 
 # =========================================================
 # 11. MÁQUINA DE ESTADOS
@@ -195,15 +209,30 @@ var estado: Estado = Estado.PATRULLANDO
 
 var jugador: CharacterBody2D = null
 
+var _sensor_entorno
+var _controlador_decision_plataforma
+var _controlador_movimiento_plataforma
+var _controlador_combate
+var _controlador_navegacion
+var _controlador_ataque
+var _controlador_decisiones_estado
+var _controlador_ciclo_vida
+var _controlador_portal
+
+@onready var _controlador_separacion = EnemySeparationControllerScript.new(self)
+
+@onready var _controlador_plataformas = EnemyPlatformControllerScript.new(self)
+
+@onready var _procesador_golpes = CombatHitProcessorScript.new()
+
+@onready var _controlador_fisica = CharacterPhysicsControllerScript.new(self)
+
 
 # =========================================================
 # 13. TIMERS / CONTADORES
 # =========================================================
 
 var timer_patrulla: float = 0.0
-var timer_ataque: float = 0.0
-var timer_cooldown_ataque: float = 0.0
-
 var timer_inercia_portal: float = 0.0
 var timer_cooldown_plataforma: float = 0.0
 
@@ -244,32 +273,136 @@ var velocidad_knockback: float = 0.0
 
 
 # =========================================================
-# 18. DATOS DE COMBATE
-# =========================================================
-
-var ataque_hitbox_activo: bool = false
-
-# El Enemy solamente almacena Players golpeados.
-var objetivos_golpeados: Array[Node2D] = []
-
-
-# =========================================================
-# DATOS DE SEPARACIÓN
-# =========================================================
-
-var separacion_enemigos: Vector2 = Vector2.ZERO
-
-var impulso_ataque_aplicado: bool = false
-
-# =========================================================
 # 19. CICLO DE VIDA - READY
 # =========================================================
 
 func _ready() -> void:
 
+	_sensor_entorno = EnemyWorldSensorScript.new(
+		self,
+		mascara_terreno
+	)
+	_controlador_decisiones_estado = EnemyStateDecisionControllerScript.new(
+		self,
+		_sensor_entorno,
+		{
+			"distancia_deteccion": DISTANCIA_DETECCION,
+			"diferencia_vertical_maxima": DIFERENCIA_VERTICAL_MAXIMA,
+			"tiempo_perdida": TIEMPO_PERDIDA_JUGADOR,
+			"distancia_ataque": DISTANCIA_ATAQUE,
+			"diferencia_ataque": 45.0,
+			"distancia_combate_minima": DISTANCIA_COMBATE_MINIMA
+		}
+	)
+	_controlador_decision_plataforma = EnemyPlatformDecisionControllerScript.new(
+		self,
+		_sensor_entorno,
+		_controlador_plataformas
+	)
+	_controlador_movimiento_plataforma = EnemyPlatformMotionControllerScript.new(
+		self,
+		sprite,
+		_controlador_decision_plataforma,
+		Callable(self, "actualizar_direccion_hitbox"),
+		Callable(self, "actualizar_animacion_movimiento"),
+		Callable(self, "reproducir_animacion")
+	)
+	_controlador_combate = EnemyCombatControllerScript.new(
+		self,
+		sprite,
+		hitbox_ataque,
+		collision_hitbox,
+		_procesador_golpes,
+		{
+			"frame_start": FRAME_ATAQUE_INICIO,
+			"frame_end": FRAME_ATAQUE_FIN,
+			"damage": DAÑO_ATAQUE,
+			"horizontal_knockback": FUERZA_EMPUJE_ATAQUE,
+			"vertical_knockback": FUERZA_EMPUJE_VERTICAL,
+			"hitbox_offset_x": HITBOX_OFFSET_X,
+			"hitbox_offset_y": HITBOX_OFFSET_Y
+		}
+	)
+	_controlador_navegacion = EnemyNavigationControllerScript.new(
+		self,
+		sprite,
+		_sensor_entorno,
+		_controlador_separacion,
+		{
+			"animar_movimiento": Callable(self, "actualizar_animacion_movimiento"),
+			"reproducir_animacion": Callable(self, "reproducir_animacion"),
+			"actualizar_hitbox": Callable(self, "actualizar_direccion_hitbox"),
+			"cambiar_estado": Callable(self, "_cambiar_estado_por_nombre"),
+			"preparar_ataque": Callable(self, "preparar_ataque"),
+			"intentar_interceptar": Callable(self, "_intentar_interceptar_plataforma")
+		},
+		{
+			"distancia_patrulla": DISTANCIA_PATRULLA,
+			"tiempo_espera": TIEMPO_ESPERA_PATRULLA,
+			"aceleracion": ACELERACION,
+			"desaceleracion": DESACELERACION,
+			"velocidad_trote": VELOCIDAD_TROTE,
+			"velocidad_carrera": VELOCIDAD_CARRERA,
+			"fuerza_salto": FUERZA_SALTO,
+			"distancia_salto": DISTANCIA_SALTO_HORIZONTAL,
+			"distancia_separacion": DISTANCIA_SEPARACION_ENEMY,
+			"fuerza_separacion": FUERZA_SEPARACION_ENEMY,
+			"distancia_ataque": DISTANCIA_ATAQUE,
+			"distancia_combate_minima": DISTANCIA_COMBATE_MINIMA,
+			"distancia_retroceso": DISTANCIA_RETROCESO
+		}
+	)
+	_controlador_ataque = EnemyAttackControllerScript.new(
+		self,
+		sprite,
+		_procesador_golpes,
+		_controlador_combate,
+		{
+			"cambiar_estado": Callable(self, "_cambiar_estado_por_nombre"),
+			"reproducir_animacion": Callable(self, "reproducir_animacion"),
+			"actualizar_hitbox": Callable(self, "actualizar_direccion_hitbox")
+		},
+		{
+			"windup": TIEMPO_VIENTO_ATAQUE,
+			"impulso": IMPULSO_ATAQUE,
+			"frenado": FRENADO_ATAQUE
+		}
+	)
+	_controlador_ciclo_vida = EnemyLifecycleControllerScript.new(
+		self,
+		{
+			"esta_muerto": Callable(self, "esta_muerto"),
+			"cambiar_estado": Callable(self, "_cambiar_estado_por_nombre"),
+			"limpiar_knockback": Callable(self, "_limpiar_knockback"),
+			"limpiar_plataformas": Callable(self, "_limpiar_plataformas"),
+			"limpiar_objetivos": Callable(_procesador_golpes, "limpiar_objetivos"),
+			"desactivar_hitbox": Callable(self, "desactivar_hitbox_ataque"),
+			"reproducir_animacion": Callable(self, "reproducir_animacion"),
+			"restaurar_datos": Callable(self, "_restaurar_datos_iniciales"),
+			"actualizar_origen_patrulla": Callable(self, "_actualizar_origen_patrulla"),
+			"reiniciar_vida": Callable(self, "reiniciar_vida")
+		}
+	)
+
 	_configurar_grupo_enemy()
 	_configurar_plataformas()
 	_configurar_posicion_inicial()
+	_controlador_ciclo_vida.establecer_posicion_inicial(posicion_inicial)
+	_controlador_portal = EnemyPortalControllerScript.new(
+		self,
+		sprite,
+		_controlador_ataque,
+		{
+			"limpiar_plataformas": Callable(self, "_limpiar_plataformas"),
+			"limpiar_knockback": Callable(self, "_limpiar_knockback"),
+			"desactivar_hitbox": Callable(self, "desactivar_hitbox_ataque"),
+			"cambiar_estado": Callable(self, "_cambiar_estado_por_nombre"),
+			"actualizar_origen_patrulla": Callable(self, "_actualizar_origen_patrulla"),
+			"establecer_inercia": Callable(self, "_establecer_inercia_portal"),
+			"reproducir_animacion": Callable(self, "reproducir_animacion")
+		},
+		DURACION_INERCIA_PORTAL
+	)
 	_configurar_sprite()
 	_configurar_animaciones()
 	_configurar_senales()
@@ -307,23 +440,8 @@ func _configurar_sprite() -> void:
 
 
 func _configurar_animaciones() -> void:
-
-	if sprite.sprite_frames == null:
-		return
-
-	if sprite.sprite_frames.has_animation("attack"):
-
-		sprite.sprite_frames.set_animation_loop(
-			"attack",
-			false
-		)
-
-	if sprite.sprite_frames.has_animation("fall_on_ground"):
-
-		sprite.sprite_frames.set_animation_loop(
-			"fall_on_ground",
-			false
-		)
+	_controlador_animacion.configurar_bucle("attack", false)
+	_controlador_animacion.configurar_bucle("fall_on_ground", false)
 
 
 func _configurar_senales() -> void:
@@ -408,10 +526,7 @@ func _physics_process(delta: float) -> void:
 
 func _actualizar_timers(delta: float) -> void:
 
-	timer_cooldown_ataque = maxf(
-		timer_cooldown_ataque - delta,
-		0.0
-	)
+	_controlador_ataque.actualizar_timers(delta)
 
 	timer_inercia_portal = maxf(
 		timer_inercia_portal - delta,
@@ -436,10 +551,7 @@ func _actualizar_timers(delta: float) -> void:
 # =========================================================
 
 func _aplicar_gravedad(delta: float) -> void:
-
-	if not is_on_floor():
-
-		velocity.y += gravedad_actual * delta
+	_controlador_fisica.aplicar_gravedad(delta, gravedad_actual)
 
 
 # =========================================================
@@ -447,13 +559,7 @@ func _aplicar_gravedad(delta: float) -> void:
 # =========================================================
 
 func _aplicar_damping(delta: float) -> void:
-
-	if damping_entorno <= 0.0:
-		return
-
-	velocity *= exp(
-		-damping_entorno * delta
-	)
+	_controlador_fisica.aplicar_damping(delta, damping_entorno)
 
 
 # =========================================================
@@ -461,22 +567,18 @@ func _aplicar_damping(delta: float) -> void:
 # =========================================================
 
 func _procesar_knockback(delta: float) -> void:
-
-	if not _esta_recibiendo_knockback():
-		return
-
-	velocity.x = velocidad_knockback
-
-	velocidad_knockback = move_toward(
-		velocidad_knockback,
-		0.0,
-		DESACELERACION * delta
-	)
+	if _esta_recibiendo_knockback():
+		velocidad_knockback = _controlador_fisica.procesar_knockback(
+			velocidad_knockback,
+			DESACELERACION,
+			delta
+		)
 
 
 func _esta_recibiendo_knockback() -> bool:
-
-	return absf(velocidad_knockback) > 0.1
+	return _controlador_fisica.esta_recibiendo_knockback(
+		velocidad_knockback
+	)
 
 
 # =========================================================
@@ -487,45 +589,13 @@ func aplicar_efecto_portal(
 	nueva_posicion: Vector2,
 	nueva_velocidad: Vector2
 ) -> void:
-
-	global_position = nueva_posicion
-	velocity = nueva_velocidad
-
-	plataforma_actual = null
-	plataforma_objetivo = null
-
-	velocidad_knockback = 0.0
-
-	timer_ataque = 0.0
-	timer_cooldown_ataque = 0.0
-
-	desactivar_hitbox_ataque()
-
-	estado = Estado.PATRULLANDO
-
-	punto_origen_x = global_position.x
-
-	if not is_zero_approx(nueva_velocidad.x):
-
-		direccion_patrulla = signf(
-			nueva_velocidad.x
-		)
-
-		sprite.flip_h = (
-			direccion_patrulla < 0.0
-		)
-
-	else:
-
-		direccion_patrulla *= -1.0
-
-		sprite.flip_h = not sprite.flip_h
-
-	timer_inercia_portal = (
-		DURACION_INERCIA_PORTAL
+	direccion_patrulla = _controlador_portal.aplicar_efecto(
+		nueva_posicion, nueva_velocidad, direccion_patrulla
 	)
 
-	reproducir_animacion("standing")
+
+func _establecer_inercia_portal(duracion: float) -> void:
+	timer_inercia_portal = duracion
 
 
 # =========================================================
@@ -533,118 +603,39 @@ func aplicar_efecto_portal(
 # =========================================================
 
 func evaluar_transiciones() -> void:
-
-	# -----------------------------------------------------
-	# ESTADOS NO INTERRUMPIBLES
-	# -----------------------------------------------------
-
-	if estado in [
-		Estado.ANTICIPANDO_ATAQUE,
-		Estado.ATACANDO
-	]:
-
-		return
-
-	# -----------------------------------------------------
-	# RECUPERACIÓN
-	# -----------------------------------------------------
-
-	if estado == Estado.RECUPERACION:
-
-		return
-
-	# -----------------------------------------------------
-	# INERCIA DEL PORTAL
-	# -----------------------------------------------------
-
-	if timer_inercia_portal > 0.0:
-		return
-
-	# -----------------------------------------------------
-	# PLATAFORMA ACTUAL
-	# -----------------------------------------------------
-
 	actualizar_plataforma_actual()
-
-	if plataforma_actual != null:
-
-		estado = Estado.EN_PLATAFORMA
-
-		return
-
-	# -----------------------------------------------------
-	# PLAYER
-	# -----------------------------------------------------
-
-	var puede_ver := puede_ver_al_jugador()
-
-	if puede_ver:
-
-		timer_perdida_jugador = TIEMPO_PERDIDA_JUGADOR
-
-	else:
-
-		if timer_perdida_jugador <= 0.0:
-
-			if estado in [
-				Estado.PERSEGUIR,
-				Estado.POSICIONARSE
-			]:
-
-				estado = Estado.PATRULLANDO
-				punto_origen_x = global_position.x
-
-		return
-
-	# -----------------------------------------------------
-	# PLAYER VISIBLE
-	# -----------------------------------------------------
-
-	if not perseguir_jugador:
-		return
-
-	var diferencia_x := (
-		jugador.global_position.x
-		- global_position.x
+	var resultado: Dictionary = _controlador_decisiones_estado.evaluar(
+		_obtener_nombre_estado(),
+		jugador,
+		perseguir_jugador,
+		timer_inercia_portal,
+		timer_perdida_jugador,
+		plataforma_actual,
+		_controlador_ataque.obtener_cooldown()
 	)
-
-	var diferencia_y := (
-		jugador.global_position.y
-		- global_position.y
-	)
-
-	var distancia_x := absf(diferencia_x)
-
-	# -----------------------------------------------------
-	# ATAQUE
-	# -----------------------------------------------------
-
-	if (
-		distancia_x <= DISTANCIA_ATAQUE
-		and absf(diferencia_y) <= 45.0
-		and timer_cooldown_ataque <= 0.0
-		and is_on_floor()
-	):
-
+	timer_perdida_jugador = float(resultado["timer_perdida"])
+	if bool(resultado["reiniciar_origen"]):
+		punto_origen_x = global_position.x
+	if bool(resultado["preparar_ataque"]):
 		preparar_ataque()
+	elif not String(resultado["estado"]).is_empty():
+		_cambiar_estado_por_nombre(String(resultado["estado"]))
 
-		return
 
-	# -----------------------------------------------------
-	# MUY CERCA
-	# -----------------------------------------------------
-
-	if distancia_x < DISTANCIA_COMBATE_MINIMA:
-
-		estado = Estado.POSICIONARSE
-
-		return
-
-	# -----------------------------------------------------
-	# PERSEGUIR
-	# -----------------------------------------------------
-
-	estado = Estado.PERSEGUIR
+func _obtener_nombre_estado() -> String:
+	match estado:
+		Estado.ANTICIPANDO_ATAQUE:
+			return "anticipando"
+		Estado.ATACANDO:
+			return "atacando"
+		Estado.RECUPERACION:
+			return "recuperacion"
+		Estado.PERSEGUIR:
+			return "perseguir"
+		Estado.POSICIONARSE:
+			return "posicionarse"
+		_:
+			return "otro"
 
 
 # =========================================================
@@ -691,59 +682,12 @@ func procesar_comportamiento(delta: float) -> void:
 # =========================================================
 
 func ejecutar_patrulla(delta: float) -> void:
-
-	var distancia_desplazada := (
-		global_position.x - punto_origen_x
+	var resultado: Dictionary = _controlador_navegacion.ejecutar_patrulla(
+		delta, direccion_patrulla, punto_origen_x, timer_patrulla
 	)
-
-	var llego_al_limite := (
-		absf(distancia_desplazada)
-		>= DISTANCIA_PATRULLA
-		and signf(distancia_desplazada)
-		== direccion_patrulla
-	)
-
-	var borde_cercano := not hay_suelo(
-		direccion_patrulla,
-		24.0
-	)
-
-	var pared := hay_pared(
-		direccion_patrulla,
-		20.0
-	)
-
-	if (
-		llego_al_limite
-		or borde_cercano
-		or pared
-	):
-
+	if resultado["estado"] == "espera":
 		estado = Estado.ESPERA_PATRULLA
-
-		timer_patrulla = (
-			TIEMPO_ESPERA_PATRULLA
-		)
-
-		velocity.x = move_toward(
-			velocity.x,
-			0.0,
-			DESACELERACION * delta
-		)
-
-		reproducir_animacion("standing")
-
-		return
-
-	velocity.x = move_toward(
-		velocity.x,
-		direccion_patrulla * VELOCIDAD_TROTE,
-		ACELERACION * delta
-	)
-
-	sprite.flip_h = direccion_patrulla < 0.0
-
-	actualizar_animacion_movimiento(false)
+		timer_patrulla = float(resultado["timer"])
 
 
 # =========================================================
@@ -751,22 +695,13 @@ func ejecutar_patrulla(delta: float) -> void:
 # =========================================================
 
 func ejecutar_espera_patrulla(delta: float) -> void:
-
-	velocity.x = move_toward(
-		velocity.x,
-		0.0,
-		DESACELERACION * delta
+	var resultado: Dictionary = _controlador_navegacion.ejecutar_espera(
+		delta, timer_patrulla, punto_origen_x, direccion_patrulla
 	)
-
-	reproducir_animacion("standing")
-
-	timer_patrulla -= delta
-
-	if timer_patrulla <= 0.0:
-
-		direccion_patrulla *= -1.0
-		punto_origen_x = global_position.x
-
+	timer_patrulla = float(resultado["timer"])
+	if resultado["estado"] == "patrulla":
+		direccion_patrulla = float(resultado["direccion"])
+		punto_origen_x = float(resultado["origen_x"])
 		estado = Estado.PATRULLANDO
 
 # =========================================================
@@ -774,347 +709,85 @@ func ejecutar_espera_patrulla(delta: float) -> void:
 # =========================================================
 
 func obtener_enemigos_cercanos() -> Array[Node2D]:
+	return _controlador_separacion.obtener_enemigos_cercanos(
+		DISTANCIA_SEPARACION_ENEMY
+	)
 
-	var enemigos: Array[Node2D] = []
-
-	for nodo in get_tree().get_nodes_in_group("enemy"):
-
-		if nodo == self:
-			continue
-
-		if not nodo is Node2D:
-			continue
-
-		if not is_instance_valid(nodo):
-			continue
-
-		if nodo.has_method("esta_muerto") and nodo.esta_muerto():
-			continue
-
-		var distancia := global_position.distance_to(
-			nodo.global_position
-		)
-
-		if distancia <= DISTANCIA_SEPARACION_ENEMY:
-			enemigos.append(nodo)
-
-	return enemigos
-	
 # =========================================================
 # SEPARACIÓN - CALCULAR FUERZA
 # =========================================================
 
 func calcular_separacion_enemigos() -> Vector2:
-
-	var separacion := Vector2.ZERO
-
-	for enemigo in obtener_enemigos_cercanos():
-
-		var diferencia := (
-			global_position
-			- enemigo.global_position
-		)
-
-		var distancia := diferencia.length()
-
-		if distancia <= 0.01:
-			continue
-
-		var fuerza := (
-			1.0
-			- distancia / DISTANCIA_SEPARACION_ENEMY
-		)
-
-		separacion += (
-			diferencia.normalized()
-			* fuerza
-			* FUERZA_SEPARACION_ENEMY
-		)
-
-	return separacion
+	return _controlador_separacion.calcular_separacion(
+		DISTANCIA_SEPARACION_ENEMY,
+		FUERZA_SEPARACION_ENEMY
+	)
 
 # =========================================================
 # 31. IA - PERSECUCIÓN
 # =========================================================
 
 func ejecutar_persecucion(delta: float) -> void:
-
-	if jugador == null:
-
-		estado = Estado.PATRULLANDO
-
-		return
-
-	var diferencia_x := (
-		jugador.global_position.x
-		- global_position.x
-	)
-
-	var distancia_x := absf(diferencia_x)
-
-	var direccion_x := signf(diferencia_x)
-
-	if is_zero_approx(direccion_x):
-
-		velocity.x = move_toward(
-			velocity.x,
-			0.0,
-			DESACELERACION * delta
-		)
-
-		reproducir_animacion("standing")
-
-		return
-
-	sprite.flip_h = direccion_x < 0.0
-	actualizar_direccion_hitbox()
-
-	# -----------------------------------------------------
-	# SUELO
-	# -----------------------------------------------------
-
-	var suelo_al_frente := hay_suelo(
-		direccion_x,
-		28.0
-	)
-
-	# -----------------------------------------------------
-	# PARED
-	# -----------------------------------------------------
-
-	var pared := hay_pared(
-		direccion_x,
-		24.0
-	)
-
-	# -----------------------------------------------------
-	# PLAYER MÁS ALTO
-	# -----------------------------------------------------
-
-	var jugador_mas_alto := (
-		jugador.global_position.y
-		< global_position.y - 25.0
-	)
-
-	# -----------------------------------------------------
-	# SALTO
-	# -----------------------------------------------------
-
-	if (
-		is_on_floor()
-		and (
-			pared
-			or (
-				jugador_mas_alto
-				and distancia_x
-				<= DISTANCIA_SALTO_HORIZONTAL
-			)
-		)
-	):
-
-		if hay_espacio_para_saltar(direccion_x):
-
-			velocity.y = FUERZA_SALTO
-
-			velocity.x = (
-				direccion_x
-				* VELOCIDAD_TROTE
-			)
-
-			reproducir_animacion("jump")
-
-			return
-
-	# -----------------------------------------------------
-	# ABISMO
-	# -----------------------------------------------------
-
-	if not suelo_al_frente and is_on_floor():
-
-		velocity.x = move_toward(
-			velocity.x,
-			0.0,
-			DESACELERACION * delta
-		)
-
-		reproducir_animacion("standing")
-
-		_intentar_interceptar_plataforma(true)
-
-		return
-
-	# -----------------------------------------------------
-	# VELOCIDAD
-	# -----------------------------------------------------
-
-	var velocidad_objetivo := (
-		VELOCIDAD_CARRERA
-		if distancia_x > 140.0
-		else VELOCIDAD_TROTE
-	)
-
-
-	# =====================================================
-	# SEPARACIÓN ENTRE ENEMIGOS
-	# =====================================================
-
-	separacion_enemigos = calcular_separacion_enemigos()
-
-	var velocidad_persecucion := (
-		direccion_x * velocidad_objetivo
-	)
-
-	# Aplicar separación horizontal.
-
-	velocidad_persecucion += separacion_enemigos.x
-
-	velocity.x = move_toward(
-		velocity.x,
-		velocidad_persecucion,
-		ACELERACION * delta
-	)
-
-	actualizar_animacion_movimiento(
-		velocidad_objetivo == VELOCIDAD_CARRERA
-	)
+	_controlador_navegacion.ejecutar_persecucion(delta, jugador)
 
 # =========================================================
 # 32. IA - POSICIONAMIENTO DE COMBATE
 # =========================================================
 
 func ejecutar_posicionamiento(delta: float) -> void:
-
-	if jugador == null or not is_instance_valid(jugador):
-
-		estado = Estado.PATRULLANDO
-
-		return
-
-	var diferencia_x := (
-		jugador.global_position.x
-		- global_position.x
+	_controlador_navegacion.ejecutar_posicionamiento(
+		delta, jugador, _controlador_ataque.obtener_cooldown()
 	)
 
-	var diferencia_y := (
-		jugador.global_position.y
-		- global_position.y
-	)
 
-	var distancia_x := absf(diferencia_x)
+func _cambiar_estado_por_nombre(nombre_estado: String) -> void:
+	match nombre_estado:
+		"anticipando":
+			estado = Estado.ANTICIPANDO_ATAQUE
+		"atacando":
+			estado = Estado.ATACANDO
+		"recuperacion":
+			estado = Estado.RECUPERACION
+		"perseguir":
+			estado = Estado.PERSEGUIR
+		"posicionarse":
+			estado = Estado.POSICIONARSE
+		"en_plataforma":
+			estado = Estado.EN_PLATAFORMA
+		"patrulla", "patrullando":
+			estado = Estado.PATRULLANDO
+		"muerto":
+			estado = Estado.MUERTO
 
-	var direccion_x := signf(diferencia_x)
 
-	if is_zero_approx(direccion_x):
+func _limpiar_knockback() -> void:
+	velocidad_knockback = 0.0
 
-		velocity.x = move_toward(
-			velocity.x,
-			0.0,
-			DESACELERACION * delta
-		)
 
-		reproducir_animacion("standing")
+func _limpiar_plataformas() -> void:
+	plataforma_actual = null
+	plataforma_objetivo = null
 
-		return
 
-	# -----------------------------------------------------
-	# SI EL PLAYER SE ALEJÓ
-	# -----------------------------------------------------
+func _restaurar_datos_iniciales() -> void:
+	velocidad_knockback = 0.0
+	gravedad_actual = GRAVEDAD
+	timer_patrulla = 0.0
+	timer_inercia_portal = 0.0
+	timer_cooldown_plataforma = 0.0
+	timer_perdida_jugador = 0.0
+	_controlador_ataque.reiniciar()
 
-	if distancia_x > DISTANCIA_ATAQUE:
 
-		estado = Estado.PERSEGUIR
-
-		return
-
-	# -----------------------------------------------------
-	# PLAYER DEMASIADO LEJOS PARA POSICIONARSE
-	# -----------------------------------------------------
-
-	if distancia_x > DISTANCIA_COMBATE_MINIMA:
-
-		estado = Estado.PERSEGUIR
-
-		return
-
-	# -----------------------------------------------------
-	# MIRAR AL PLAYER
-	# -----------------------------------------------------
-
-	sprite.flip_h = direccion_x < 0.0
-	actualizar_direccion_hitbox()
-
-	# -----------------------------------------------------
-	# ATAQUE
-	# -----------------------------------------------------
-
-	if (
-		distancia_x <= DISTANCIA_ATAQUE
-		and absf(diferencia_y) <= 45.0
-		and timer_cooldown_ataque <= 0.0
-		and is_on_floor()
-	):
-
-		preparar_ataque()
-
-		return
-
-	# -----------------------------------------------------
-	# PLAYER DEMASIADO CERCA
-	# -----------------------------------------------------
-
-	if distancia_x < DISTANCIA_RETROCESO:
-
-		velocity.x = move_toward(
-			velocity.x,
-			-direccion_x * VELOCIDAD_TROTE * 0.45,
-			DESACELERACION * delta
-		)
-
-		actualizar_animacion_movimiento(false)
-
-		return
-
-	# -----------------------------------------------------
-	# ZONA DE COMBATE
-	# -----------------------------------------------------
-
-	velocity.x = move_toward(
-		velocity.x,
-		0.0,
-		DESACELERACION * delta
-	)
-
-	reproducir_animacion("standing")
+func _actualizar_origen_patrulla() -> void:
+	punto_origen_x = global_position.x
 
 # =========================================================
 # 33. COMBATE - PREPARACIÓN DE ATAQUE
 # =========================================================
 
 func preparar_ataque() -> void:
-
-	if jugador == null:
-		return
-
-	if timer_cooldown_ataque > 0.0:
-		return
-
-	estado = Estado.ANTICIPANDO_ATAQUE
-
-	timer_ataque = TIEMPO_VIENTO_ATAQUE
-
-	velocity.x = 0.0
-
-	var direccion := signf(
-		jugador.global_position.x
-		- global_position.x
-	)
-
-	if not is_zero_approx(direccion):
-
-		sprite.flip_h = direccion < 0.0
-		actualizar_direccion_hitbox()
-
-	reproducir_animacion("standing")
+	_controlador_ataque.preparar(jugador)
 
 
 # =========================================================
@@ -1122,18 +795,9 @@ func preparar_ataque() -> void:
 # =========================================================
 
 func ejecutar_anticipacion(delta: float) -> void:
-
-	velocity.x = move_toward(
-		velocity.x,
-		0.0,
-		DESACELERACION * delta
+	_controlador_ataque.ejecutar_anticipacion(
+		delta, DESACELERACION, jugador
 	)
-
-	timer_ataque -= delta
-
-	if timer_ataque <= 0.0:
-
-		iniciar_ataque()
 
 
 # =========================================================
@@ -1141,26 +805,9 @@ func ejecutar_anticipacion(delta: float) -> void:
 # =========================================================
 
 func iniciar_ataque() -> void:
-
 	if estado == Estado.MUERTO:
 		return
-
-	if jugador == null:
-		return
-
-	estado = Estado.ATACANDO
-
-	velocity.x = 0.0
-
-	objetivos_golpeados.clear()
-
-	desactivar_hitbox_ataque()
-
-	impulso_ataque_aplicado = false
-
-	sprite.frame = 0
-
-	reproducir_animacion("attack")
+	_controlador_ataque.iniciar(jugador)
 
 
 # =========================================================
@@ -1168,44 +815,7 @@ func iniciar_ataque() -> void:
 # =========================================================
 
 func ejecutar_ataque(delta: float) -> void:
-
-	# =====================================================
-	# DIRECCIÓN DEL ATAQUE
-	# =====================================================
-
-	var direccion := (
-		-1.0
-		if sprite.flip_h
-		else 1.0
-	)
-
-	# =====================================================
-	# PEQUEÑO IMPULSO INICIAL
-	# =====================================================
-
-	if not impulso_ataque_aplicado:
-
-		velocity.x = direccion * IMPULSO_ATAQUE
-
-		impulso_ataque_aplicado = true
-
-	# =====================================================
-	# FRENAR DESPUÉS DEL IMPULSO
-	# =====================================================
-
-	else:
-
-		velocity.x = move_toward(
-			velocity.x,
-			0.0,
-			FRENADO_ATAQUE * delta
-		)
-
-	# =====================================================
-	# HITBOX
-	# =====================================================
-
-	_actualizar_ventana_ataque()
+	_controlador_ataque.ejecutar_ataque(delta)
 
 
 # =========================================================
@@ -1213,249 +823,41 @@ func ejecutar_ataque(delta: float) -> void:
 # =========================================================
 
 func _actualizar_ventana_ataque() -> void:
+	_controlador_combate.actualizar_ventana_ataque()
 
-	if sprite.animation != "attack":
-
-		desactivar_hitbox_ataque()
-
-		return
-
-	var frame_actual := sprite.frame
-
-	var golpe_activo := (
-		frame_actual >= FRAME_ATAQUE_INICIO
-		and frame_actual <= FRAME_ATAQUE_FIN
-	)
-
-	if golpe_activo:
-
-		activar_hitbox_ataque()
-
-		_procesar_hurtboxes_dentro_del_hitbox()
-
-	else:
-
-		desactivar_hitbox_ataque()
-
-
-# =========================================================
-# 38. COMBATE - HITBOX
-# =========================================================
 
 func activar_hitbox_ataque() -> void:
-
-	if ataque_hitbox_activo:
-		return
-
-	ataque_hitbox_activo = true
-
-	hitbox_ataque.set_deferred(
-		"monitoring",
-		true
-	)
-
-	collision_hitbox.set_deferred(
-		"disabled",
-		false
-	)
+	_controlador_combate.activar_hitbox_ataque()
 
 
 func desactivar_hitbox_ataque() -> void:
+	_controlador_combate.desactivar_hitbox_ataque()
 
-	if not ataque_hitbox_activo:
-
-		hitbox_ataque.set_deferred(
-			"monitoring",
-			false
-		)
-
-		collision_hitbox.set_deferred(
-			"disabled",
-			true
-		)
-
-		return
-
-	ataque_hitbox_activo = false
-
-	hitbox_ataque.set_deferred(
-		"monitoring",
-		false
-	)
-
-	collision_hitbox.set_deferred(
-		"disabled",
-		true
-	)
-
-
-# =========================================================
-# 39. COMBATE - DIRECCIÓN HITBOX
-# =========================================================
 
 func actualizar_direccion_hitbox() -> void:
-
-	if collision_hitbox == null:
-		return
-
-	if sprite.flip_h:
-
-		collision_hitbox.position.x = (
-			-HITBOX_OFFSET_X
-		)
-
-	else:
-
-		collision_hitbox.position.x = (
-			HITBOX_OFFSET_X
-		)
-
-	collision_hitbox.position.y = HITBOX_OFFSET_Y
+	_controlador_combate.actualizar_direccion_hitbox()
 
 
-# =========================================================
-# 40. COMBATE - DETECCIÓN DE HURTBOX
-# =========================================================
-
-func _on_hitbox_ataque_area_entered(
-	area: Area2D
-) -> void:
-
-	if not ataque_hitbox_activo:
-		return
-
-	procesar_hurtbox_player(area)
+func _on_hitbox_ataque_area_entered(area: Area2D) -> void:
+	if _controlador_combate.esta_activo():
+		_controlador_combate.procesar_hurtbox_player(area)
 
 
 func procesar_hurtbox_player(area: Area2D) -> void:
+	_controlador_combate.procesar_hurtbox_player(area)
 
-	if area == null:
-		return
-
-	if not is_instance_valid(area):
-		return
-
-	# -----------------------------------------------------
-	# SOLAMENTE PLAYER HURTBOX
-	# -----------------------------------------------------
-
-	if not area.is_in_group("player_hurtbox"):
-		return
-
-	# -----------------------------------------------------
-	# OBTENER PLAYER
-	# -----------------------------------------------------
-
-	var objetivo := area.get_parent()
-
-	if objetivo == null:
-		return
-
-	if not objetivo.is_in_group("Player"):
-
-		if not objetivo.is_in_group("player"):
-			return
-
-	# -----------------------------------------------------
-	# EVITAR GOLPES REPETIDOS
-	# -----------------------------------------------------
-
-	if objetivos_golpeados.has(objetivo):
-		return
-
-	objetivos_golpeados.append(objetivo)
-
-	# -----------------------------------------------------
-	# DIRECCIÓN DEL EMPUJE
-	# -----------------------------------------------------
-
-	var direccion_empuje := 1.0
-
-	if sprite.flip_h:
-
-		direccion_empuje = -1.0
-
-	# -----------------------------------------------------
-	# APLICAR DAÑO
-	# -----------------------------------------------------
-
-	if objetivo.has_method("recibir_dano"):
-
-		objetivo.recibir_dano(
-			DAÑO_ATAQUE,
-			self
-		)
-
-	# -----------------------------------------------------
-	# APLICAR EMPUJE
-	# -----------------------------------------------------
-
-	if objetivo.has_method("recibir_empuje"):
-
-		objetivo.recibir_empuje(
-			direccion_empuje
-			* FUERZA_EMPUJE_ATAQUE,
-			FUERZA_EMPUJE_VERTICAL
-		)
-
-# =========================================================
-# 41. COMBATE - OVERLAPS EXISTENTES
-# =========================================================
 
 func _procesar_hurtboxes_dentro_del_hitbox() -> void:
-
-	if not ataque_hitbox_activo:
-		return
-
-	if not hitbox_ataque.monitoring:
-		return
-
-	var areas := (
-		hitbox_ataque.get_overlapping_areas()
-	)
-
-	for area in areas:
-
-		if area is Area2D:
-
-			procesar_hurtbox_player(
-				area
-			)
-
-
-# =========================================================
-# 42. COMBATE - RECUPERACIÓN
-# =========================================================
+	_controlador_combate.procesar_hurtboxes_superpuestas()
 
 func ejecutar_recuperacion(delta: float) -> void:
-
-	velocity.x = move_toward(
-		velocity.x,
-		0.0,
-		DESACELERACION * delta
+	_controlador_ataque.ejecutar_recuperacion(
+		delta,
+		DESACELERACION,
+		jugador,
+		puede_ver_al_jugador()
 	)
-
-	reproducir_animacion("standing")
-
-	timer_ataque -= delta
-
-	if timer_ataque > 0.0:
-		return
-
-	if jugador != null and is_instance_valid(jugador):
-
-		if puede_ver_al_jugador():
-
-			estado = Estado.PERSEGUIR
-
-		else:
-
-			estado = Estado.PATRULLANDO
-			punto_origen_x = global_position.x
-
-	else:
-
-		estado = Estado.PATRULLANDO
+	if estado == Estado.PATRULLANDO:
 		punto_origen_x = global_position.x
 
 # =========================================================
@@ -1467,403 +869,102 @@ func _on_animation_finished() -> void:
 	match sprite.animation:
 
 		"attack":
-
-			desactivar_hitbox_ataque()
-
-			objetivos_golpeados.clear()
-
-			impulso_ataque_aplicado = false
-
-			estado = Estado.RECUPERACION
-
-			timer_cooldown_ataque = (
+			_controlador_ataque.finalizar_animacion_ataque(
 				TIEMPO_RECUPERACION_ATAQUE
 			)
-
-			timer_ataque = (
-				TIEMPO_RECUPERACION_ATAQUE
-			)
-
-			reproducir_animacion("standing")
 
 # =========================================================
 # 45. PLATAFORMAS - INTERCEPCIÓN
 # =========================================================
 
-func _intentar_interceptar_plataforma(
-	puede_ver: bool
-) -> void:
-
-	if estado not in [
-		Estado.PATRULLANDO,
-		Estado.PERSEGUIR
-	]:
-
+func _intentar_interceptar_plataforma(puede_ver: bool) -> void:
+	if estado not in [Estado.PATRULLANDO, Estado.PERSEGUIR]:
+		return
+	if not is_on_floor() or timer_cooldown_plataforma > 0.0:
 		return
 
-	if not is_on_floor():
-		return
-
-	if timer_cooldown_plataforma > 0.0:
-		return
-
-	var plataforma := buscar_plataforma_cercana()
-
-	if plataforma == null:
-		return
-
-	var diferencia_x := (
-		plataforma.global_position.x
-		- global_position.x
-	)
-
-	var direccion_plataforma := signf(
-		diferencia_x
-	)
-
-	if is_zero_approx(
-		direccion_plataforma
-	):
-
-		return
-
-	var hay_abismo := not hay_suelo(
+	var decision: Dictionary = _controlador_decision_plataforma.decidir_intercepcion(
+		puede_ver,
+		jugador,
 		direccion_patrulla,
-		25.0
+		DISTANCIA_RADAR_PLATAFORMA,
+		DISTANCIA_VERTICAL_PLATAFORMA,
+		0.65
 	)
 
-	var necesita_cruzar := (
-		hay_abismo
-		and direccion_plataforma
-		== direccion_patrulla
-	)
-
-	var persigue_hacia_plataforma := false
-
-	if puede_ver and jugador != null:
-
-		var direccion_jugador := signf(
-			jugador.global_position.x
-			- global_position.x
-		)
-
-		persigue_hacia_plataforma = (
-			direccion_jugador
-			== direccion_plataforma
-		)
-
-	if not (
-		necesita_cruzar
-		or persigue_hacia_plataforma
-	):
-
+	if decision["rechazada_por_azar"]:
+		timer_cooldown_plataforma = COOLDOWN_REINTENTO_PLATAFORMA
 		return
 
-	if randf() < 0.65:
-
+	var plataforma := decision["plataforma"] as AnimatableBody2D
+	if plataforma != null:
 		plataforma_objetivo = plataforma
+		estado = Estado.INTERCEPTANDO_PLATAFORMA
 
-		estado = (
-			Estado.INTERCEPTANDO_PLATAFORMA
-		)
-
-	else:
-
-		timer_cooldown_plataforma = (
-			COOLDOWN_REINTENTO_PLATAFORMA
-		)
-
-
-# =========================================================
-# 46. PLATAFORMAS - INTERCEPTAR
-# =========================================================
-
-func ejecutar_intercepcion_plataforma(
-	delta: float
-) -> void:
-
-	if (
-		plataforma_objetivo == null
-		or not is_instance_valid(
-			plataforma_objetivo
-		)
-	):
-
+func ejecutar_intercepcion_plataforma(delta: float) -> void:
+	if plataforma_objetivo == null or not is_instance_valid(plataforma_objetivo):
 		plataforma_objetivo = null
-
 		estado = Estado.PERSEGUIR
-
 		return
 
-	var velocidad_plataforma := (
-		obtener_velocidad_plataforma(
-			plataforma_objetivo
-		)
+	_controlador_movimiento_plataforma.ejecutar_intercepcion(
+		plataforma_objetivo,
+		delta,
+		FUERZA_SALTO,
+		VELOCIDAD_CARRERA,
+		VELOCIDAD_TROTE,
+		ACELERACION
 	)
 
-	var posicion_proyectada := (
-		plataforma_objetivo.global_position
-		+ velocidad_plataforma * 0.25
-	)
-
-	var diferencia := (
-		posicion_proyectada
-		- global_position
-	)
-
-	var distancia_x := absf(
-		diferencia.x
-	)
-
-	var direccion_x := signf(
-		diferencia.x
-	)
-
-	if not is_zero_approx(direccion_x):
-
-		sprite.flip_h = (
-			direccion_x < 0.0
-		)
-
-		actualizar_direccion_hitbox()
-
-	# -----------------------------------------------------
-	# PLATAFORMA ARRIBA
-	# -----------------------------------------------------
-
-	if (
-		diferencia.y < -20.0
-		and diferencia.y > -110.0
-		and distancia_x < 130.0
-		and is_on_floor()
-	):
-
-		velocity.y = FUERZA_SALTO
-
-		velocity.x = (
-			direccion_x
-			* VELOCIDAD_CARRERA
-		)
-
-		reproducir_animacion("jump")
-
-		return
-
-	# -----------------------------------------------------
-	# BORDE
-	# -----------------------------------------------------
-
-	if is_on_floor():
-
-		var borde := not hay_suelo(
-			direccion_x,
-			22.0
-		)
-
-		if (
-			borde
-			and distancia_x < 130.0
-		):
-
-			velocity.y = (
-				FUERZA_SALTO * 0.85
-			)
-
-			velocity.x = (
-				direccion_x
-				* VELOCIDAD_CARRERA
-			)
-
-			reproducir_animacion("jump")
-
-			return
-
-	# -----------------------------------------------------
-	# DESPLAZAMIENTO
-	# -----------------------------------------------------
-
-	var velocidad_objetivo := (
-		VELOCIDAD_CARRERA
-		if distancia_x > 90.0
-		else VELOCIDAD_TROTE
-	)
-
-	velocity.x = move_toward(
-		velocity.x,
-		direccion_x * velocidad_objetivo,
-		ACELERACION * delta
-	)
-
-	actualizar_animacion_movimiento(
-		velocidad_objetivo
-		== VELOCIDAD_CARRERA
-	)
-
-
-# =========================================================
-# 47. PLATAFORMAS - EN PLATAFORMA
-# =========================================================
-
-func ejecutar_en_plataforma(
-	delta: float
-) -> void:
-
+func ejecutar_en_plataforma(delta: float) -> void:
 	if plataforma_actual == null:
-
 		estado = (
 			Estado.PERSEGUIR
 			if _puede_perseguir_jugador()
 			else Estado.PATRULLANDO
 		)
-
 		return
 
-	var velocidad_plataforma := (
-		obtener_velocidad_plataforma(
-			plataforma_actual
-		)
+	var desembarco_realizado: bool = _controlador_movimiento_plataforma.ejecutar_en_plataforma(
+		obtener_velocidad_plataforma(plataforma_actual),
+		obtener_direcciones_desembarco(),
+		delta,
+		ALCANCE_DESEMBARCO,
+		PROFUNDIDAD_DESEMBARCO,
+		ALCANCE_SALTO_DESEMBARCO,
+		PROFUNDIDAD_SALTO_DESEMBARCO,
+		FUERZA_SALTO,
+		VELOCIDAD_CARRERA,
+		DESACELERACION
 	)
-
-	# -----------------------------------------------------
-	# BUSCAR DESEMBARCO
-	# -----------------------------------------------------
-
-	var direcciones := (
-		obtener_direcciones_desembarco()
-	)
-
-	var encontrado := false
-	var direccion_desembarco := 0.0
-	var necesita_salto := false
-
-	for direccion in direcciones:
-
-		if hay_suelo_estatico(
-			direccion,
-			ALCANCE_DESEMBARCO,
-			PROFUNDIDAD_DESEMBARCO
-		):
-
-			encontrado = true
-			direccion_desembarco = direccion
-			necesita_salto = false
-
-			break
-
-		if hay_suelo_estatico(
-			direccion,
-			ALCANCE_SALTO_DESEMBARCO,
-			PROFUNDIDAD_SALTO_DESEMBARCO
-		):
-
-			encontrado = true
-			direccion_desembarco = direccion
-			necesita_salto = true
-
-			break
-
-	# -----------------------------------------------------
-	# DESEMBARCAR
-	# -----------------------------------------------------
-
-	if is_on_floor() and encontrado:
-
-		sprite.flip_h = (
-			direccion_desembarco < 0.0
-		)
-
-		actualizar_direccion_hitbox()
-
-		if necesita_salto:
-
-			velocity.y = (
-				FUERZA_SALTO * 0.85
-			)
-
-			velocity.x = (
-				direccion_desembarco
-				* VELOCIDAD_CARRERA
-				+ velocidad_plataforma.x
-			)
-
-			reproducir_animacion("jump")
-
-		else:
-
-			velocity.x = (
-				direccion_desembarco
-				* VELOCIDAD_CARRERA
-				+ velocidad_plataforma.x
-			)
-
-			actualizar_animacion_movimiento(true)
-
-		plataforma_actual = null
-		plataforma_objetivo = null
-
-		timer_cooldown_plataforma = (
-			COOLDOWN_REINTENTO_PLATAFORMA
-		)
-
-		punto_origen_x = global_position.x
-
-		estado = (
-			Estado.PERSEGUIR
-			if _puede_perseguir_jugador()
-			else Estado.PATRULLANDO
-		)
-
+	if not desembarco_realizado:
 		return
 
-	# -----------------------------------------------------
-	# PERMANECER EN PLATAFORMA
-	# -----------------------------------------------------
+	plataforma_actual = null
+	plataforma_objetivo = null
+	timer_cooldown_plataforma = COOLDOWN_REINTENTO_PLATAFORMA
+	punto_origen_x = global_position.x
+	estado = (
+		Estado.PERSEGUIR
+		if _puede_perseguir_jugador()
+		else Estado.PATRULLANDO
+	)
 
-	if is_on_floor():
-
-		velocity.x = move_toward(
-			velocity.x,
-			velocidad_plataforma.x,
-			DESACELERACION * delta
-		)
-
-		reproducir_animacion("standing")
-
-	else:
-
-		actualizar_animacion_movimiento(false)
-
-
-# =========================================================
 # 48. PLATAFORMAS - DIRECCIONES DE DESEMBARCO
 # =========================================================
 
 func obtener_direcciones_desembarco() -> Array[float]:
+	var jugador_visible := jugador != null and puede_ver_al_jugador()
+	var posicion_jugador := global_position
+	if jugador_visible:
+		posicion_jugador = jugador.global_position
 
-	var direcciones: Array[float] = [
-		1.0,
-		-1.0
-	]
-
-	if (
-		jugador != null
-		and puede_ver_al_jugador()
-	):
-
-		var direccion_jugador := signf(
-			jugador.global_position.x
-			- global_position.x
-		)
-
-		if not is_zero_approx(
-			direccion_jugador
-		):
-
-			direcciones = [
-				direccion_jugador,
-				-direccion_jugador
-			]
-
+	var direcciones: Array[float] = _controlador_decision_plataforma.call(
+		"obtener_direcciones_desembarco",
+		global_position,
+		posicion_jugador,
+		jugador_visible
+	)
 	return direcciones
 
 
@@ -1874,21 +975,7 @@ func obtener_direcciones_desembarco() -> Array[float]:
 func obtener_velocidad_plataforma(
 	plataforma: AnimatableBody2D
 ) -> Vector2:
-
-	if plataforma == null:
-		return Vector2.ZERO
-
-	if not is_instance_valid(plataforma):
-		return Vector2.ZERO
-
-	var valor: Variant = plataforma.get(
-		"velocidad_lineal_calculada"
-	)
-
-	if valor is Vector2:
-		return valor as Vector2
-
-	return Vector2.ZERO
+	return _controlador_plataformas.obtener_velocidad(plataforma)
 
 
 # =========================================================
@@ -1896,85 +983,9 @@ func obtener_velocidad_plataforma(
 # =========================================================
 
 func actualizar_plataforma_actual() -> void:
-
-	var encontrada: AnimatableBody2D = null
-
-	# -----------------------------------------------------
-	# COLISIÓN
-	# -----------------------------------------------------
-
-	if is_on_floor():
-
-		var collision := (
-			get_last_slide_collision()
-		)
-
-		if collision != null:
-
-			var collider := (
-				collision.get_collider()
-			)
-
-			if (
-				collider is AnimatableBody2D
-				and collider.is_in_group(
-					"plataforma_movil"
-				)
-			):
-
-				encontrada = collider
-
-	# -----------------------------------------------------
-	# RAYCAST
-	# -----------------------------------------------------
-
-	if encontrada == null and is_on_floor():
-
-		var espacio := (
-			get_world_2d()
-			.direct_space_state
-		)
-
-		var origen := (
-			global_position
-			+ Vector2(0.0, 2.0)
-		)
-
-		var destino := (
-			global_position
-			+ Vector2(0.0, 35.0)
-		)
-
-		var query := (
-			PhysicsRayQueryParameters2D.create(
-				origen,
-				destino
-			)
-		)
-
-		query.exclude = [self]
-		query.collision_mask = mascara_terreno
-
-		var resultado := (
-			espacio.intersect_ray(query)
-		)
-
-		if not resultado.is_empty():
-
-			var collider = (
-				resultado.collider
-			)
-
-			if (
-				collider is AnimatableBody2D
-				and collider.is_in_group(
-					"plataforma_movil"
-				)
-			):
-
-				encontrada = collider
-
-	plataforma_actual = encontrada
+	plataforma_actual = _controlador_plataformas.detectar_plataforma_bajo_agente(
+		mascara_terreno
+	)
 
 
 # =========================================================
@@ -1982,53 +993,10 @@ func actualizar_plataforma_actual() -> void:
 # =========================================================
 
 func buscar_plataforma_cercana() -> AnimatableBody2D:
-
-	var plataformas := (
-		get_tree().get_nodes_in_group(
-			"plataforma_movil"
-		)
+	return _controlador_plataformas.buscar_plataforma_cercana(
+		DISTANCIA_RADAR_PLATAFORMA,
+		DISTANCIA_VERTICAL_PLATAFORMA
 	)
-
-	var plataforma_mas_cercana: AnimatableBody2D = null
-
-	var distancia_minima := (
-		DISTANCIA_RADAR_PLATAFORMA
-	)
-
-	for nodo in plataformas:
-
-		if not nodo is AnimatableBody2D:
-			continue
-
-		var plataforma := (
-			nodo as AnimatableBody2D
-		)
-
-		var diferencia := (
-			plataforma.global_position
-			- global_position
-		)
-
-		if (
-			absf(diferencia.y)
-			> DISTANCIA_VERTICAL_PLATAFORMA
-		):
-
-			continue
-
-		var distancia := (
-			diferencia.length()
-		)
-
-		if distancia < distancia_minima:
-
-			distancia_minima = distancia
-
-			plataforma_mas_cercana = (
-				plataforma
-			)
-
-	return plataforma_mas_cercana
 
 
 # =========================================================
@@ -2036,58 +1004,11 @@ func buscar_plataforma_cercana() -> AnimatableBody2D:
 # =========================================================
 
 func puede_ver_al_jugador() -> bool:
-
-	if jugador == null:
-		return false
-
-	if not is_instance_valid(jugador):
-		return false
-
-	var diferencia := (
-		jugador.global_position
-		- global_position
+	return _sensor_entorno.puede_ver_objetivo(
+		jugador,
+		DISTANCIA_DETECCION,
+		DIFERENCIA_VERTICAL_MAXIMA
 	)
-
-	if diferencia.length() > DISTANCIA_DETECCION:
-		return false
-
-	if (
-		absf(diferencia.y)
-		> DIFERENCIA_VERTICAL_MAXIMA
-	):
-
-		return false
-
-	var espacio := (
-		get_world_2d()
-		.direct_space_state
-	)
-
-	var origen := (
-		global_position
-		+ Vector2(0.0, -12.0)
-	)
-
-	var destino := (
-		jugador.global_position
-		+ Vector2(0.0, -12.0)
-	)
-
-	var query := (
-		PhysicsRayQueryParameters2D.create(
-			origen,
-			destino
-		)
-	)
-
-	query.exclude = [self]
-	query.collision_mask = mascara_terreno
-
-	var colision := (
-		espacio.intersect_ray(query)
-	)
-
-	return colision.is_empty()
 
 
 # =========================================================
@@ -2098,41 +1019,7 @@ func hay_suelo(
 	direccion: float,
 	avance: float
 ) -> bool:
-
-	if is_zero_approx(direccion):
-		return true
-
-	var espacio := (
-		get_world_2d()
-		.direct_space_state
-	)
-
-	var origen := (
-		global_position
-		+ Vector2(
-			direccion * avance,
-			5.0
-		)
-	)
-
-	var destino := (
-		origen
-		+ Vector2(0.0, 38.0)
-	)
-
-	var query := (
-		PhysicsRayQueryParameters2D.create(
-			origen,
-			destino
-		)
-	)
-
-	query.exclude = [self]
-	query.collision_mask = mascara_terreno
-
-	return not (
-		espacio.intersect_ray(query)
-	).is_empty()
+	return _sensor_entorno.hay_suelo(direccion, avance)
 
 
 # =========================================================
@@ -2144,54 +1031,10 @@ func hay_suelo_estatico(
 	avance: float,
 	profundidad: float = 38.0
 ) -> bool:
-
-	var espacio := (
-		get_world_2d()
-		.direct_space_state
-	)
-
-	var origen := (
-		global_position
-		+ Vector2(
-			direccion * avance,
-			5.0
-		)
-	)
-
-	var destino := (
-		origen
-		+ Vector2(
-			0.0,
-			profundidad
-		)
-	)
-
-	var query := (
-		PhysicsRayQueryParameters2D.create(
-			origen,
-			destino
-		)
-	)
-
-	query.exclude = [self]
-	query.collision_mask = mascara_terreno
-
-	var colision := (
-		espacio.intersect_ray(query)
-	)
-
-	if colision.is_empty():
-		return false
-
-	var objeto: Object = (
-		colision.collider
-	)
-
-	return not (
-		objeto is AnimatableBody2D
-		and objeto.is_in_group(
-			"plataforma_movil"
-		)
+	return _sensor_entorno.hay_suelo_estatico(
+		direccion,
+		avance,
+		profundidad
 	)
 
 
@@ -2203,41 +1046,7 @@ func hay_pared(
 	direccion: float,
 	distancia: float
 ) -> bool:
-
-	if is_zero_approx(direccion):
-		return false
-
-	var espacio := (
-		get_world_2d()
-		.direct_space_state
-	)
-
-	var origen := (
-		global_position
-		+ Vector2(0.0, -12.0)
-	)
-
-	var destino := (
-		origen
-		+ Vector2(
-			direccion * distancia,
-			0.0
-		)
-	)
-
-	var query := (
-		PhysicsRayQueryParameters2D.create(
-			origen,
-			destino
-		)
-	)
-
-	query.exclude = [self]
-	query.collision_mask = mascara_terreno
-
-	return not (
-		espacio.intersect_ray(query)
-	).is_empty()
+	return _sensor_entorno.hay_pared(direccion, distancia)
 
 
 # =========================================================
@@ -2247,41 +1056,7 @@ func hay_pared(
 func hay_espacio_para_saltar(
 	direccion: float
 ) -> bool:
-
-	if is_zero_approx(direccion):
-		return false
-
-	var espacio := (
-		get_world_2d()
-		.direct_space_state
-	)
-
-	var origen := (
-		global_position
-		+ Vector2(0.0, -15.0)
-	)
-
-	var destino := (
-		origen
-		+ Vector2(
-			direccion * 20.0,
-			-55.0
-		)
-	)
-
-	var query := (
-		PhysicsRayQueryParameters2D.create(
-			origen,
-			destino
-		)
-	)
-
-	query.exclude = [self]
-	query.collision_mask = mascara_terreno
-
-	return (
-		espacio.intersect_ray(query)
-	).is_empty()
+	return _sensor_entorno.hay_espacio_para_saltar(direccion)
 
 
 # =========================================================
@@ -2289,26 +1064,7 @@ func hay_espacio_para_saltar(
 # =========================================================
 
 func buscar_jugador() -> void:
-
-	var nodo := (
-		get_tree()
-		.get_first_node_in_group("Player")
-	)
-
-	if nodo == null:
-
-		nodo = (
-			get_tree()
-			.get_first_node_in_group("player")
-		)
-
-	if nodo is CharacterBody2D:
-
-		jugador = nodo
-
-	else:
-
-		jugador = null
+	jugador = _sensor_entorno.buscar_jugador(get_tree())
 
 
 # =========================================================
@@ -2332,29 +1088,10 @@ func _puede_perseguir_jugador() -> bool:
 func actualizar_animacion_movimiento(
 	corriendo: bool
 ) -> void:
-
-	if not is_on_floor():
-
-		reproducir_animacion("jump")
-
-	elif absf(velocity.x) > 10.0:
-
-		if (
-			corriendo
-			and sprite.sprite_frames.has_animation(
-				"run"
-			)
-		):
-
-			reproducir_animacion("run")
-
-		else:
-
-			reproducir_animacion("trot")
-
-	else:
-
-		reproducir_animacion("standing")
+	var direccion: float = signf(velocity.x) if absf(velocity.x) > 10.0 else 0.0
+	_controlador_animacion.reproducir_locomocion(
+		is_on_floor(), direccion, false, corriendo, true
+	)
 
 
 # =========================================================
@@ -2364,24 +1101,11 @@ func actualizar_animacion_movimiento(
 func reproducir_animacion(
 	nombre: String
 ) -> void:
-
-	if sprite.sprite_frames == null:
-		return
-
-	if not sprite.sprite_frames.has_animation(
-		nombre
-	):
-
-		return
-
-	if (
-		sprite.animation == nombre
-		and sprite.is_playing()
-	):
-
-		return
-
-	sprite.play(nombre)
+	_controlador_animacion.reproducir(
+		nombre,
+		false,
+		false
+	)
 
 
 # =========================================================
@@ -2389,26 +1113,7 @@ func reproducir_animacion(
 # =========================================================
 
 func morir() -> void:
-
-	if esta_muerto():
-		return
-
-	estado = Estado.MUERTO
-
-	velocity = Vector2.ZERO
-
-	velocidad_knockback = 0.0
-
-	plataforma_actual = null
-	plataforma_objetivo = null
-
-	objetivos_golpeados.clear()
-
-	desactivar_hitbox_ataque()
-
-	reproducir_animacion(
-		"fall_on_ground"
-	)
+	_controlador_ciclo_vida.morir()
 
 
 # =========================================================
@@ -2425,37 +1130,7 @@ func esta_muerto() -> bool:
 # =========================================================
 
 func reiniciar() -> void:
-
-	estado = Estado.PATRULLANDO
-
-	global_position = posicion_inicial
-
-	velocity = Vector2.ZERO
-
-	velocidad_knockback = 0.0
-
-	gravedad_actual = GRAVEDAD
-
-	timer_patrulla = 0.0
-	timer_ataque = 0.0
-	timer_cooldown_ataque = 0.0
-
-	timer_inercia_portal = 0.0
-	timer_cooldown_plataforma = 0.0
-	timer_perdida_jugador = 0.0
-
-	plataforma_actual = null
-	plataforma_objetivo = null
-
-	objetivos_golpeados.clear()
-
-	punto_origen_x = global_position.x
-
-	reiniciar_vida()
-
-	desactivar_hitbox_ataque()
-
-	reproducir_animacion("standing")
+	_controlador_ciclo_vida.reiniciar()
 
 
 # =========================================================
@@ -2469,35 +1144,19 @@ func recibir_empuje(
 
 	if esta_muerto():
 		return
-
-	var direccion_segura := signf(
-		direccion
+	velocidad_knockback = _controlador_fisica.iniciar_knockback(
+		direccion,
+		FUERZA_KNOCKBACK_HORIZONTAL,
+		fuerza_vertical
 	)
-
-	if is_zero_approx(
-		direccion_segura
-	):
-
+	if is_zero_approx(velocidad_knockback):
 		return
-
-	velocidad_knockback = (
-		direccion_segura
-		* FUERZA_KNOCKBACK_HORIZONTAL
-	)
-
-	velocity.y = fuerza_vertical
 
 	if estado in [
 		Estado.ATACANDO,
 		Estado.ANTICIPANDO_ATAQUE
 	]:
-
-		desactivar_hitbox_ataque()
-
-		estado = Estado.RECUPERACION
-
-		timer_cooldown_ataque = 0.5
-		timer_ataque = 0.5
+		_controlador_ataque.cancelar_por_golpe()
 
 
 # =========================================================

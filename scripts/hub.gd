@@ -1,5 +1,9 @@
 extends CanvasLayer
 
+const EnemyHealthBarScript = preload(
+	"res://scripts/iu/enemy_health_bar.gd"
+)
+
 
 # =========================================================
 # REFERENCIAS
@@ -139,164 +143,10 @@ func _on_enemy_spawned(enemy: Danable) -> void:
 # =========================================================
 
 func _crear_barra_enemigo(enemy: Danable) -> void:
-
-	# -----------------------------------------------------
-	# FILA
-	# -----------------------------------------------------
-
-	var fila_contenedor := HBoxContainer.new()
-
-	fila_contenedor.add_theme_constant_override(
-		"separation",
-		10
-	)
-
-
-	# -----------------------------------------------------
-	# ETIQUETA
-	# -----------------------------------------------------
-
-	var etiqueta := Label.new()
-
-	etiqueta.name = "NombreEnemy"
-	etiqueta.text = "Enemy"
-
-	etiqueta.add_theme_font_size_override(
-		"font_size",
-		12
-	)
-
-
-	# -----------------------------------------------------
-	# BARRA DE VIDA
-	# -----------------------------------------------------
-
-	var nueva_barra := ProgressBar.new()
-
-	nueva_barra.name = "BarraVida"
-
-	nueva_barra.custom_minimum_size = Vector2(
-		110,
-		14
-	)
-
-	nueva_barra.max_value = enemy.vida_maxima
-	nueva_barra.value = enemy.vida_actual
-
-	nueva_barra.show_percentage = true
-
-	nueva_barra.add_theme_font_size_override(
-		"font_size",
-		10
-	)
-
-
-	# -----------------------------------------------------
-	# ESTILO DE FONDO
-	# -----------------------------------------------------
-
-	var estilo_fondo := StyleBoxFlat.new()
-
-	estilo_fondo.bg_color = Color("#2a2a2a")
-
-	nueva_barra.add_theme_stylebox_override(
-		"background",
-		estilo_fondo
-	)
-
-
-	# -----------------------------------------------------
-	# ESTILO DE RELLENO
-	# -----------------------------------------------------
-
-	var estilo_relleno := StyleBoxFlat.new()
-
-	estilo_relleno.bg_color = Color("#0e6900")
-
-	nueva_barra.add_theme_stylebox_override(
-		"fill",
-		estilo_relleno
-	)
-
-
-	# -----------------------------------------------------
-	# CONSTRUIR FILA
-	# -----------------------------------------------------
-
-	fila_contenedor.add_child(etiqueta)
-	fila_contenedor.add_child(nueva_barra)
-
-	contenedor_barras.add_child(
-		fila_contenedor
-	)
-
-
-	# -----------------------------------------------------
-	# REGISTRAR
-	# -----------------------------------------------------
-
-	barras_enemigos[enemy] = fila_contenedor
-
-
-	# -----------------------------------------------------
-	# CONECTAR VIDA
-	# -----------------------------------------------------
-
-	if not enemy.vida_cambiada.is_connected(
-		_on_enemigo_vida_cambiada.bind(enemy)
-	):
-		enemy.vida_cambiada.connect(
-			_on_enemigo_vida_cambiada.bind(enemy)
-		)
-
-
-# =========================================================
-# VIDA DEL ENEMIGO
-# =========================================================
-
-func _on_enemigo_vida_cambiada(
-	actual: int,
-	maxima: int,
-	enemigo: Danable
-) -> void:
-
-	if enemigo == null:
-		return
-
-	if not barras_enemigos.has(enemigo):
-		return
-
-	var fila: HBoxContainer = barras_enemigos[enemigo]
-
-	if not is_instance_valid(fila):
-		return
-
-	var barra := fila.get_node_or_null(
-		"BarraVida"
-	) as ProgressBar
-
-	if barra == null:
-		return
-
-	barra.max_value = maxima
-	barra.value = actual
-
-
-	# -----------------------------------------------------
-	# CAMBIO DE COLOR SEGÚN VIDA
-	# -----------------------------------------------------
-
-	var relleno := barra.get_theme_stylebox(
-		"fill"
-	) as StyleBoxFlat
-
-	if relleno == null:
-		return
-
-	if actual <= 0:
-		relleno.bg_color = Color("#2a2a2a")
-	else:
-		relleno.bg_color = Color("#0e6900")
+	var fila: HBoxContainer = EnemyHealthBarScript.new()
+	fila.call("configurar", enemy, "Enemy")
+	contenedor_barras.add_child(fila)
+	barras_enemigos[enemy] = fila
 
 
 # =========================================================
@@ -313,13 +163,10 @@ func _on_enemy_removed(enemy: Danable) -> void:
 
 	var fila: HBoxContainer = barras_enemigos[enemy]
 
-	if is_instance_valid(fila):
-		fila.queue_free()
+	if not is_instance_valid(fila):
+		return
 
-	barras_enemigos.erase(enemy)
-
-	_actualizar_nombres_enemigos()
-
+	fila.call("marcar_derrotado")
 
 # =========================================================
 # RESET DE ENEMIGOS
@@ -355,13 +202,6 @@ func _actualizar_nombres_enemigos() -> void:
 		if not is_instance_valid(fila):
 			continue
 
-		var etiqueta := fila.get_node_or_null(
-			"NombreEnemy"
-		) as Label
-
-		if etiqueta == null:
-			continue
-
-		etiqueta.text = "Enemy " + str(numero)
+		fila.call("asignar_nombre", "Enemy " + str(numero))
 
 		numero += 1
