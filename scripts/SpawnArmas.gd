@@ -1,5 +1,12 @@
 extends Node2D
 
+const WeaponFactoryScript = preload(
+	"res://scripts/factories/weapon_factory.gd"
+)
+const RandomSpawnPointStrategyScript = preload(
+	"res://scripts/strategies/random_spawn_point_strategy.gd"
+)
+
 # Lista de escenas de armas disponibles para aparecer aleatoriamente
 @export var armas_escenas: Array[PackedScene] = [
 	preload("res://scenes/armas/basuca.tscn"),
@@ -21,8 +28,10 @@ extends Node2D
 # Cantidad de armas que deben aparecer a la vez
 @export var cantidad_activa: int = 3
 
-var puntos_spawn: Array = []
-var armas_actuales: Array = []
+@export var estrategia_puntos: Resource = RandomSpawnPointStrategyScript.new()
+
+var puntos_spawn: Array[Marker2D] = []
+var armas_actuales: Array[Node2D] = []
 var temporizador: Timer
 
 func _ready() -> void:
@@ -52,18 +61,25 @@ func _spawnear_armas() -> void:
 	if puntos_spawn.is_empty() or armas_escenas.is_empty():
 		return
 	
-	# Mezclar los puntos de spawn aleatoriamente
-	var puntos_mezclados = puntos_spawn.duplicate()
-	puntos_mezclados.shuffle()
-	
-	# Tomar únicamente el número definido (ej. 3)
-	var seleccion_puntos = puntos_mezclados.slice(0, min(cantidad_activa, puntos_mezclados.size()))
+	if estrategia_puntos == null or not estrategia_puntos.has_method("seleccionar"):
+		push_error("SpawnArmas: estrategia_puntos debe implementar seleccionar().")
+		return
+
+	var seleccion_puntos: Array[Marker2D] = estrategia_puntos.call(
+		"seleccionar",
+		puntos_spawn,
+		cantidad_activa
+	)
 	
 	for punto in seleccion_puntos:
 		# Escoger un arma aleatoria de la lista
 		var arma_aleatoria_escena = armas_escenas.pick_random() as PackedScene
 		if arma_aleatoria_escena:
-			var instancia_arma = arma_aleatoria_escena.instantiate()
+			var instancia_arma: Node2D = WeaponFactoryScript.crear(
+				arma_aleatoria_escena
+			)
+			if instancia_arma == null:
+				continue
 			
 			# Colocarla en la posición exacta del Marker2D
 			instancia_arma.global_position = punto.global_position

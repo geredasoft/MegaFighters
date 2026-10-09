@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://11nr6n48nqhs"]
+[gd_scene format=3]
 
 [ext_resource type="Script" uid="uid://3e3qclbnafcp" path="res://scripts/juego.gd" id="1_aqyt2"]
 [ext_resource type="Texture2D" uid="uid://d3lmw0h2cv5b4" path="res://assets/sprites/escenarios/nivel2.png" id="2_aqyt2"]
@@ -39,7 +39,7 @@
 [ext_resource type="Script" uid="uid://c1rkraxdd6c2i" path="res://scripts/agua.gd" id="37_444yh"]
 [ext_resource type="Script" uid="uid://bbr1mhu717bus" path="res://scripts/SpawnArmas.gd" id="38_huegp"]
 [ext_resource type="PackedScene" uid="uid://cqdfweb16n405" path="res://scenes/hub.tscn" id="39_p60g2"]
-[ext_resource type="PackedScene" path="res://scenes/nivel3.tscn" id="40_nivel3"]
+[ext_resource type="PackedScene" path="res://scenes/escena_final_rescate.tscn" id="40_final"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sodyg"]
 atlas = ExtResource("15_mgoay")
@@ -246,7 +246,7 @@ size = Vector2(37, 175)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_53mwi"]
 size = Vector2(230.05933, 27.167229)
 
-[node name="Nivel2" type="Node2D" unique_id=1550691242]
+[node name="Nivel3" type="Node2D"]
 
 [node name="Control" type="Control" parent="." unique_id=1193211094]
 layout_mode = 3
@@ -275,8 +275,9 @@ vertical_alignment = 1
 script = ExtResource("1_aqyt2")
 jugador = NodePath("../../../Player")
 enemy_spawner = NodePath("../../../EnemySpawner")
-escena_siguiente = ExtResource("40_nivel3")
-mensaje_victoria = "¡NIVEL 2 COMPLETADO!\n\nPresiona ENTER para continuar al Nivel 3."
+escena_siguiente = ExtResource("40_final")
+mensaje_victoria = "¡MISIÓN CUMPLIDA!"
+espera_transicion_victoria = 5.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=153010119]
 position = Vector2(576.50006, 323.49997)

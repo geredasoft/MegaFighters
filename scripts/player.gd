@@ -1,4 +1,32 @@
 extends Danable 
+
+const PlayerInputControllerScript = preload(
+	"res://scripts/components/player_input_controller.gd"
+)
+const SpriteAnimationControllerScript = preload(
+	"res://scripts/components/sprite_animation_controller.gd"
+)
+const PlayerLadderControllerScript = preload(
+	"res://scripts/components/player_ladder_controller.gd"
+)
+const CombatHitProcessorScript = preload(
+	"res://scripts/components/combat_hit_processor.gd"
+)
+const CharacterPhysicsControllerScript = preload(
+	"res://scripts/components/character_physics_controller.gd"
+)
+const PlayerCombatControllerScript = preload(
+	"res://scripts/components/player_combat_controller.gd"
+)
+const PlayerMovementControllerScript = preload(
+	"res://scripts/components/player_movement_controller.gd"
+)
+const PlayerLifecycleControllerScript = preload(
+	"res://scripts/components/player_lifecycle_controller.gd"
+)
+const PlayerPortalControllerScript = preload(
+	"res://scripts/components/player_portal_controller.gd"
+)
  
 # ========================================================= 
 # SEÑALES 
@@ -87,52 +115,115 @@ enum Estado {
 } 
  
 var estado_actual: Estado = Estado.NORMAL 
- 
- 
+
+var _controlador_entrada = PlayerInputControllerScript.new()
+var _controlador_ciclo_vida
+
 # ========================================================= 
 # REFERENCIAS 
 # ========================================================= 
  
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D 
+
+@onready var _controlador_portal = PlayerPortalControllerScript.new(
+	self, sprite, _controlador_entrada
+)
+
+@onready var _controlador_animacion = SpriteAnimationControllerScript.new(sprite)
+
+@onready var _procesador_golpes = CombatHitProcessorScript.new()
+
+@onready var _controlador_fisica = CharacterPhysicsControllerScript.new(self)
+
+@onready var _controlador_escalera = PlayerLadderControllerScript.new(
+	self,
+	sprite,
+	_controlador_entrada,
+	Callable(self, "cambiar_estado"),
+	Callable(self, "reproducir_animacion"),
+	Estado.NORMAL,
+	Estado.ESCALANDO,
+	VELOCIDAD_TROTE,
+	VELOCIDAD_ESCALERA,
+	FUERZA_SALTO,
+	ESCALA_NORMAL,
+	ESCALA_CLIMB,
+	OFFSET_CLIMB
+)
  
 @onready var hitbox_ataque: Area2D = $HitboxAtaque 
  
 @onready var collision_hitbox: CollisionShape2D = ( 
 	$HitboxAtaque/CollisionShape2D 
 ) 
+
+@onready var _controlador_combate = PlayerCombatControllerScript.new(
+	self,
+	sprite,
+	hitbox_ataque,
+	collision_hitbox,
+	_controlador_entrada,
+	_procesador_golpes,
+	Callable(self, "_establecer_estado_normal"),
+	Callable(self, "_establecer_estado_ataque"),
+	Callable(self, "reproducir_animacion"),
+	{
+		"frame_start": FRAME_ATAQUE_INICIO,
+		"frame_end": FRAME_ATAQUE_FIN,
+		"attack_speed": VELOCIDAD_ATAQUE,
+		"ground_acceleration": ACELERACION_SUELO,
+		"ground_friction": FRICCION_SUELO,
+		"jump_force": FUERZA_SALTO,
+		"damage": DAÑO_ATAQUE,
+		"horizontal_knockback": FUERZA_EMPUJE_ATAQUE,
+		"vertical_knockback": FUERZA_KNOCKBACK_VERTICAL_ENEMY,
+		"hitbox_offset_x": HITBOX_OFFSET_X
+	}
+)
+
+@onready var _controlador_movimiento = PlayerMovementControllerScript.new(
+	self,
+	sprite,
+	_controlador_entrada,
+	Callable(self, "procesar_entrada_escalera"),
+	Callable(self, "iniciar_ataque"),
+	Callable(self, "actualizar_direccion_hitbox"),
+	Callable(self, "_actualizar_animacion_normal"),
+	Callable(self, "reproducir_animacion"),
+	Callable(self, "_establecer_estado_normal"),
+	Callable(self, "_establecer_estado_roll"),
+	{
+		"velocidad_agachado": VELOCIDAD_AGACHADO,
+		"velocidad_trote": VELOCIDAD_TROTE,
+		"velocidad_carrera": VELOCIDAD_CARRERA,
+		"aceleracion_suelo": ACELERACION_SUELO,
+		"aceleracion_aire": ACELERACION_AIRE,
+		"friccion_suelo": FRICCION_SUELO,
+		"friccion_aire": FRICCION_AIRE,
+		"fuerza_salto": FUERZA_SALTO,
+		"velocidad_roll": VELOCIDAD_ROLL_DIVE,
+		"fuerza_roll": FUERZA_ROLL_DIVE,
+		"friccion_roll": FRICCION_ROLL_DIVE,
+		"tiempo_max_roll": TIEMPO_MAX_ROLL
+	}
+)
  
  
 # ========================================================= 
 # VARIABLES - ESCALERAS 
 # ========================================================= 
  
-var escalera_actual: Area2D = null 
-var escaleras_cercanas: Array[Area2D] = [] 
-var direccion_escalera := 0.0 
- 
- 
 # ========================================================= 
 # VARIABLES - ROLL 
 # ========================================================= 
- 
-var direccion_roll := 1.0 
-var animacion_roll_terminada := false 
-var tiempo_roll := 0.0 
- 
  
 # ========================================================= 
 # VARIABLES - PORTAL 
 # ========================================================= 
  
-var manteniendo_tecla_portal := false 
-var direccion_bloqueada_portal := 0.0 
- 
- 
 # ========================================================= 
 # VARIABLES - FÍSICA 
 # ========================================================= 
- 
-var posicion_inicial := Vector2.ZERO 
  
 var gravedad_actual := GRAVEDAD 
  
@@ -143,25 +234,7 @@ var damping_entorno := 0.0
 # VARIABLES - COMBATE 
 # ========================================================= 
  
-var ataque_mantenido := false 
- 
-# Indica si la ventana activa del golpe está funcionando. 
-var ataque_hitbox_activo := false 
- 
-# Enemigos golpeados durante ESTE ataque. 
-# 
-# Evita que el mismo enemigo reciba daño cada frame 
-# mientras permanece dentro del hitbox. 
-var objetivos_golpeados: Array[Node2D] = [] 
- 
 var velocidad_knockback: float = 0.0 
- 
-# ========================================================= 
-# REINICIO 
-# ========================================================= 
- 
-var reiniciador = Reiniciador.new(reiniciar) 
- 
  
 # ========================================================= 
 # CICLO DE VIDA 
@@ -171,7 +244,20 @@ func _ready() -> void:
  
 	add_to_group("Player") 
  
-	posicion_inicial = global_position 
+	_controlador_ciclo_vida = PlayerLifecycleControllerScript.new(
+		self,
+		{
+			"cambiar_estado": Callable(self, "_establecer_estado_ciclo_vida"),
+			"esta_muerto": Callable(self, "esta_muerto"),
+			"terminar_ataque": Callable(self, "terminar_ataque"),
+			"limpiar_knockback": Callable(self, "_limpiar_knockback"),
+			"reproducir_animacion": Callable(self, "reproducir_animacion"),
+			"reiniciar_vida": Callable(self, "reiniciar_vida"),
+			"limpiar_input_portal": Callable(_controlador_entrada, "limpiar_bloqueo_portal"),
+			"notificar_muerte": Callable(self, "_notificar_muerte")
+		}
+	)
+	_controlador_ciclo_vida.establecer_posicion_inicial(global_position)
  
 	sprite.scale = ESCALA_NORMAL 
 	sprite.position = Vector2.ZERO 
@@ -206,21 +292,8 @@ func _ready() -> void:
 # ========================================================= 
  
 func _configurar_animaciones() -> void: 
- 
-	if not sprite.sprite_frames: 
-		return 
- 
-	if sprite.sprite_frames.has_animation("roll_dive"): 
-		sprite.sprite_frames.set_animation_loop( 
-			"roll_dive", 
-			false 
-		) 
- 
-	if sprite.sprite_frames.has_animation("attack"): 
-		sprite.sprite_frames.set_animation_loop( 
-			"attack", 
-			false 
-		) 
+	_controlador_animacion.configurar_bucle("roll_dive", false)
+	_controlador_animacion.configurar_bucle("attack", false)
  
  
 # ========================================================= 
@@ -237,15 +310,13 @@ func _physics_process(delta: float) -> void:
 	# KNOCKBACK 
 	# --------------------------------------------- 
  
-	if absf(velocidad_knockback) > 0.1: 
+	if _controlador_fisica.esta_recibiendo_knockback(velocidad_knockback):
  
-		velocity.x = velocidad_knockback 
- 
-		velocidad_knockback = move_toward( 
-			velocidad_knockback, 
-			0.0, 
-			2800.0 * delta 
-		) 
+		velocidad_knockback = _controlador_fisica.procesar_knockback(
+			velocidad_knockback,
+			2800.0,
+			delta
+		)
  
 		move_and_slide() 
  
@@ -276,660 +347,114 @@ func _physics_process(delta: float) -> void:
 # ========================================================= 
  
 func _aplicar_gravedad(delta: float) -> void: 
- 
-	if estado_actual == Estado.ESCALANDO: 
-		return 
- 
-	if not is_on_floor(): 
-		velocity.y += gravedad_actual * delta 
+	_controlador_fisica.aplicar_gravedad(
+		delta,
+		gravedad_actual,
+		estado_actual == Estado.ESCALANDO
+	)
  
  
 func _aplicar_damping(delta: float) -> void: 
- 
-	if damping_entorno <= 0.0: 
-		return 
- 
-	velocity *= exp(-damping_entorno * delta) 
+	_controlador_fisica.aplicar_damping(delta, damping_entorno)
  
  
 # ========================================================= 
 # ESTADO NORMAL 
 # ========================================================= 
  
-func _procesar_estado_normal(delta: float) -> void: 
- 
-	# Escalera tiene prioridad. 
-	if procesar_entrada_escalera(): 
-		return 
- 
-	var direccion := _obtener_input_horizontal() 
- 
-	var agachado := _esta_agachado() 
- 
-	var corriendo := _esta_corriendo() 
- 
-	# ----------------------------------------------------- 
-	# ROLL DIVE 
-	# ----------------------------------------------------- 
- 
-	if ( 
-		agachado 
-		and is_on_floor() 
-		and _presiono_salto() 
-	): 
-		iniciar_roll_dive(direccion) 
-		return 
- 
-	# ----------------------------------------------------- 
-	# ATAQUE 
-	# ----------------------------------------------------- 
- 
-	if _presiono_ataque() and is_on_floor(): 
-		iniciar_ataque() 
-		return 
- 
-	# ----------------------------------------------------- 
-	# SALTO 
-	# ----------------------------------------------------- 
- 
-	if ( 
-		is_on_floor() 
-		and not agachado 
-		and _presiono_salto() 
-	): 
-		velocity.y = FUERZA_SALTO 
- 
-	# ----------------------------------------------------- 
-	# MOVIMIENTO 
-	# ----------------------------------------------------- 
- 
-	_procesar_movimiento_horizontal( 
-		direccion, 
-		agachado, 
-		corriendo, 
-		delta 
-	) 
- 
-	# ----------------------------------------------------- 
-	# ANIMACIÓN 
-	# ----------------------------------------------------- 
- 
-	_actualizar_animacion_normal( 
-		direccion, 
-		agachado, 
-		corriendo 
-	) 
- 
- 
-# ========================================================= 
-# MOVIMIENTO HORIZONTAL 
-# ========================================================= 
- 
-func _procesar_movimiento_horizontal( 
-	direccion: float, 
-	agachado: bool, 
-	corriendo: bool, 
-	delta: float 
-) -> void: 
- 
-	if direccion != 0.0: 
- 
-		var velocidad_objetivo := VELOCIDAD_TROTE 
- 
-		if agachado: 
-			velocidad_objetivo = VELOCIDAD_AGACHADO 
- 
-		elif corriendo: 
-			velocidad_objetivo = VELOCIDAD_CARRERA 
- 
-		velocidad_objetivo *= direccion 
- 
-		var aceleracion := ( 
-			ACELERACION_SUELO 
-			if is_on_floor() 
-			else ACELERACION_AIRE 
-		) 
- 
-		velocity.x = move_toward( 
-			velocity.x, 
-			velocidad_objetivo, 
-			aceleracion * delta 
-		) 
- 
-		sprite.flip_h = direccion < 0.0 
-		actualizar_direccion_hitbox() 
- 
-	else: 
- 
-		var friccion := ( 
-			FRICCION_SUELO 
-			if is_on_floor() 
-			else FRICCION_AIRE 
-		) 
- 
-		velocity.x = move_toward( 
-			velocity.x, 
-			0.0, 
-			friccion * delta 
-		) 
- 
- 
-# ========================================================= 
-# ESTADO ROLL DIVE 
-# ========================================================= 
- 
-func _procesar_estado_roll_dive(delta: float) -> void: 
- 
-	tiempo_roll += delta 
- 
-	velocity.x = move_toward( 
-		velocity.x, 
-		0.0, 
-		FRICCION_ROLL_DIVE * delta 
-	) 
- 
-	if ( 
-		animacion_roll_terminada 
-		and is_on_floor() 
-	) or tiempo_roll >= TIEMPO_MAX_ROLL: 
- 
-		finalizar_roll_dive() 
- 
-func actualizar_direccion_hitbox() -> void: 
- 
-	if sprite.flip_h: 
-		collision_hitbox.position.x = -HITBOX_OFFSET_X 
-	else: 
-		collision_hitbox.position.x = HITBOX_OFFSET_X 
- 
-	collision_hitbox.position.y = -2.0 
- 
-# ========================================================= 
-# ESTADO ATAQUE 
-# ========================================================= 
- 
-func _procesar_estado_ataque(delta: float) -> void: 
- 
-	# ----------------------------------------------------- 
-	# INPUT 
-	# ----------------------------------------------------- 
- 
-	ataque_mantenido = _esta_atacando() 
- 
-	# ----------------------------------------------------- 
-	# CANCELAR CON SALTO 
-	# ----------------------------------------------------- 
- 
-	if _presiono_salto() and is_on_floor(): 
- 
-		terminar_ataque() 
- 
-		cambiar_estado(Estado.NORMAL) 
- 
-		velocity.y = FUERZA_SALTO 
- 
-		return 
- 
-	# ----------------------------------------------------- 
-	# CANCELAR AGACHÁNDOSE 
-	# ----------------------------------------------------- 
- 
-	if _esta_agachado(): 
- 
-		terminar_ataque() 
- 
-		cambiar_estado(Estado.NORMAL) 
- 
-		reproducir_animacion("ducking") 
- 
-		return 
- 
-	# ----------------------------------------------------- 
-	# MOVIMIENTO DURANTE ATAQUE 
-	# ----------------------------------------------------- 
- 
-	var direccion := _obtener_input_horizontal() 
- 
-	if direccion != 0.0: 
- 
-		velocity.x = move_toward( 
-			velocity.x, 
-			direccion * VELOCIDAD_ATAQUE, 
-			ACELERACION_SUELO * delta 
-		) 
- 
-		sprite.flip_h = direccion < 0.0 
-		actualizar_direccion_hitbox() 
- 
-	else: 
- 
-		velocity.x = move_toward( 
-			velocity.x, 
-			0.0, 
-			FRICCION_SUELO * delta 
-		) 
- 
-	# ----------------------------------------------------- 
-	# VENTANA DEL GOLPE 
-	# ----------------------------------------------------- 
- 
-	_actualizar_ventana_ataque() 
- 
- 
-# ========================================================= 
-# VENTANA DEL ATAQUE 
-# ========================================================= 
- 
-func _actualizar_ventana_ataque() -> void: 
- 
-	if sprite.animation != "attack": 
-		desactivar_hitbox_ataque() 
-		return 
- 
-	var frame_actual := sprite.frame 
- 
-	var golpe_activo := ( 
-		frame_actual >= FRAME_ATAQUE_INICIO 
-		and frame_actual <= FRAME_ATAQUE_FIN 
-	) 
- 
-	# ----------------------------------------------------- 
-	# DEBUG 
-	# ----------------------------------------------------- 
- 
-	if golpe_activo != ataque_hitbox_activo: 
- 
-		print( 
-			"ATAQUE | Frame: ", 
-			frame_actual, 
-			" | Hitbox: ", 
-			golpe_activo 
-		) 
- 
-	# ----------------------------------------------------- 
-	# VENTANA ACTIVA 
-	# ----------------------------------------------------- 
- 
-	if golpe_activo: 
- 
-		activar_hitbox_ataque() 
- 
-	else: 
- 
-		desactivar_hitbox_ataque() 
- 
-# ========================================================= 
-# ACTIVAR HITBOX 
-# ========================================================= 
- 
-func activar_hitbox_ataque() -> void: 
- 
-	if ataque_hitbox_activo: 
-		return 
- 
-	ataque_hitbox_activo = true 
- 
-	hitbox_ataque.set_deferred("monitoring", true) 
-	collision_hitbox.set_deferred("disabled", false) 
- 
- 
-# ========================================================= 
-# DESACTIVAR HITBOX 
-# ========================================================= 
- 
-func desactivar_hitbox_ataque() -> void: 
- 
-	if not ataque_hitbox_activo: 
-		return 
- 
-	ataque_hitbox_activo = false 
- 
-	hitbox_ataque.set_deferred("monitoring", false) 
-	collision_hitbox.set_deferred("disabled", true) 
- 
- 
-# ========================================================= 
-# INICIAR ATAQUE 
-# ========================================================= 
- 
-func iniciar_ataque() -> void: 
- 
-	if estado_actual == Estado.MUERTO: 
-		return 
- 
-	if estado_actual == Estado.ATAQUE: 
-		return 
- 
-	cambiar_estado(Estado.ATAQUE) 
- 
-	velocity.x = 0.0 
- 
-	ataque_mantenido = true 
- 
-	objetivos_golpeados.clear() 
- 
-	desactivar_hitbox_ataque() 
- 
-	sprite.frame = 0 
- 
-	reproducir_animacion("attack") 
- 
-	print("⚔️ ATAQUE INICIADO") 
- 
-# ========================================================= 
-# TERMINAR ATAQUE 
-# ========================================================= 
- 
-func terminar_ataque() -> void: 
- 
-	desactivar_hitbox_ataque() 
- 
-	ataque_mantenido = false 
- 
-	objetivos_golpeados.clear() 
- 
-# ========================================================= 
-# ROLL DIVE 
-# ========================================================= 
- 
-func iniciar_roll_dive(direccion: float) -> void: 
- 
-	cambiar_estado(Estado.ROLL_DIVE) 
- 
-	animacion_roll_terminada = false 
-	tiempo_roll = 0.0 
- 
-	if direccion != 0.0: 
-		direccion_roll = sign(direccion) 
-	else: 
-		direccion_roll = -1.0 if sprite.flip_h else 1.0 
- 
-	sprite.flip_h = direccion_roll < 0.0 
- 
-	velocity.x = direccion_roll * VELOCIDAD_ROLL_DIVE 
-	velocity.y = FUERZA_ROLL_DIVE 
- 
-	sprite.stop() 
-	sprite.play("roll_dive") 
- 
- 
-func finalizar_roll_dive() -> void: 
- 
-	animacion_roll_terminada = false 
-	tiempo_roll = 0.0 
- 
-	velocity.x = 0.0 
- 
-	cambiar_estado(Estado.NORMAL) 
- 
-	reproducir_animacion("standing") 
- 
- 
-# ========================================================= 
-# ESCALERAS 
-# ========================================================= 
- 
-func _procesar_estado_escalando() -> void: 
- 
-	if escalera_actual == null: 
-		finalizar_escalada() 
-		return 
- 
-	# Saltar desde escalera. 
-	if _presiono_salto(): 
- 
-		finalizar_escalada() 
- 
-		velocity.y = FUERZA_SALTO 
- 
-		return 
- 
-	# Movimiento horizontal = salir de escalera. 
-	var direccion_h := _obtener_input_horizontal() 
- 
-	if direccion_h != 0.0: 
- 
-		finalizar_escalada() 
- 
-		velocity.x = direccion_h * VELOCIDAD_TROTE 
- 
-		sprite.flip_h = direccion_h < 0.0 
- 
-		return 
- 
-	# Movimiento vertical. 
-	direccion_escalera = 0.0 
- 
-	if Input.is_action_pressed("ui_up") or Input.is_key_pressed(KEY_W): 
-		direccion_escalera = -1.0 
- 
-	elif Input.is_action_pressed("ui_down") or Input.is_key_pressed(KEY_S): 
-		direccion_escalera = 1.0 
- 
-	velocity.x = 0.0 
- 
-	velocity.y = direccion_escalera * VELOCIDAD_ESCALERA 
- 
-	if sprite.sprite_frames.has_animation("climb"): 
- 
-		if direccion_escalera < 0.0: 
- 
-			reproducir_animacion("climb") 
- 
-		elif direccion_escalera > 0.0: 
- 
-			reproducir_animacion("climb", true) 
- 
-		else: 
- 
-			sprite.pause() 
- 
- 
-func iniciar_escalada(escalera: Area2D) -> void: 
- 
-	if escalera == null: 
-		return 
- 
-	escalera_actual = escalera 
- 
-	cambiar_estado(Estado.ESCALANDO) 
- 
-	velocity = Vector2.ZERO 
- 
-	global_position.x = escalera.global_position.x 
- 
-	sprite.scale = ESCALA_CLIMB 
-	sprite.position = OFFSET_CLIMB 
- 
-	if sprite.sprite_frames.has_animation("climb"): 
-		reproducir_animacion("climb") 
-	else: 
-		reproducir_animacion("standing") 
- 
- 
-func finalizar_escalada() -> void: 
- 
-	escalera_actual = null 
- 
-	direccion_escalera = 0.0 
- 
-	velocity.y = 0.0 
- 
-	sprite.scale = ESCALA_NORMAL 
-	sprite.position = Vector2.ZERO 
- 
-	cambiar_estado(Estado.NORMAL) 
- 
-	reproducir_animacion("standing") 
- 
- 
-func procesar_entrada_escalera() -> bool: 
- 
-	if escaleras_cercanas.is_empty(): 
-		return false 
- 
-	var escalera := obtener_escalera() 
- 
-	if escalera == null: 
-		return false 
- 
-	var quiere_subir := ( 
-		Input.is_action_pressed("ui_up") 
-		or Input.is_key_pressed(KEY_W) 
-	) 
- 
-	var quiere_bajar := ( 
-		Input.is_action_pressed("ui_down") 
-		or Input.is_key_pressed(KEY_S) 
-	) 
- 
-	if quiere_subir and escalera.get("permitir_subir"): 
-		iniciar_escalada(escalera) 
-		return true 
- 
-	if quiere_bajar and escalera.get("permitir_bajar"): 
-		iniciar_escalada(escalera) 
-		return true 
- 
-	return false 
- 
- 
-func obtener_escalera() -> Area2D: 
- 
-	if escalera_actual != null: 
-		return escalera_actual 
- 
-	if escaleras_cercanas.is_empty(): 
-		return null 
- 
-	return escaleras_cercanas.back() 
- 
- 
-func entrar_en_escalera(escalera: Area2D) -> void: 
- 
-	if ( 
-		escalera != null 
-		and not escaleras_cercanas.has(escalera) 
-	): 
-		escaleras_cercanas.append(escalera) 
- 
- 
-func salir_de_escalera(escalera: Area2D) -> void: 
- 
-	if escalera == null: 
-		return 
- 
-	escaleras_cercanas.erase(escalera) 
- 
-	if escalera_actual == escalera: 
-		finalizar_escalada() 
- 
- 
-# ========================================================= 
-# INPUT 
-# ========================================================= 
- 
+func _procesar_estado_normal(delta: float) -> void:
+	_controlador_movimiento.procesar_estado_normal(delta)
+
+
+func _procesar_estado_roll_dive(delta: float) -> void:
+	_controlador_movimiento.procesar_estado_roll_dive(delta)
+
+func actualizar_direccion_hitbox() -> void:
+	_controlador_combate.actualizar_direccion_hitbox()
+
+
+func _procesar_estado_ataque(delta: float) -> void:
+	_controlador_combate.procesar_estado_ataque(delta)
+
+
+func activar_hitbox_ataque() -> void:
+	_controlador_combate.activar_hitbox_ataque()
+
+
+func desactivar_hitbox_ataque() -> void:
+	_controlador_combate.desactivar_hitbox_ataque()
+
+
+func iniciar_ataque() -> void:
+	if estado_actual == Estado.MUERTO or estado_actual == Estado.ATAQUE:
+		return
+	_controlador_combate.iniciar_ataque()
+
+
+func terminar_ataque() -> void:
+	_controlador_combate.terminar_ataque()
+
+func iniciar_roll_dive(direccion: float) -> void:
+	_controlador_movimiento.iniciar_roll_dive(direccion)
+
+
+func finalizar_roll_dive() -> void:
+	_controlador_movimiento.finalizar_roll_dive()
+
+func _procesar_estado_escalando() -> void:
+	_controlador_escalera.procesar_estado_escalando(
+		_obtener_input_horizontal(),
+		_presiono_salto()
+	)
+
+
+func iniciar_escalada(escalera: Area2D) -> void:
+	_controlador_escalera.iniciar_escalada(escalera)
+
+
+func finalizar_escalada() -> void:
+	_controlador_escalera.finalizar_escalada()
+
+
+func procesar_entrada_escalera() -> bool:
+	return _controlador_escalera.procesar_entrada_escalera()
+
+
+func obtener_escalera() -> Area2D:
+	return _controlador_escalera.obtener_escalera()
+
+
+func entrar_en_escalera(escalera: Area2D) -> void:
+	_controlador_escalera.entrar_en_escalera(escalera)
+
+
+func salir_de_escalera(escalera: Area2D) -> void:
+	_controlador_escalera.salir_de_escalera(escalera)
+
 func _obtener_input_horizontal() -> float: 
- 
-	var input_real := Input.get_axis( 
-		"ui_left", 
-		"ui_right" 
-	) 
- 
-	if Input.is_key_pressed(KEY_A): 
-		input_real = -1.0 
- 
-	elif Input.is_key_pressed(KEY_D): 
-		input_real = 1.0 
- 
-	# Control después del portal. 
-	if manteniendo_tecla_portal: 
- 
-		if ( 
-			input_real == 0.0 
-			or sign(input_real) != sign(direccion_bloqueada_portal) 
-		): 
- 
-			manteniendo_tecla_portal = false 
-			direccion_bloqueada_portal = 0.0 
- 
-		else: 
- 
-			return -direccion_bloqueada_portal 
- 
-	return input_real 
+	return _controlador_entrada.obtener_input_horizontal()
  
  
 func _presiono_salto() -> bool: 
-	return ( 
-		Input.is_action_just_pressed("ui_up") 
-		or Input.is_key_pressed(KEY_SPACE) 
-		or Input.is_key_pressed(KEY_W) 
-	) 
- 
- 
-func _presiono_ataque() -> bool: 
-	return Input.is_action_just_pressed("attack") 
- 
- 
-func _esta_atacando() -> bool: 
-	return Input.is_action_pressed("attack") 
- 
- 
-func _esta_agachado() -> bool: 
- 
-	return ( 
-		Input.is_key_pressed(KEY_DOWN) 
-		or Input.is_action_pressed("ui_down") 
-	) 
+	return _controlador_entrada.presiono_salto()
  
  
 func _esta_corriendo() -> bool: 
- 
-	return Input.is_key_pressed(KEY_Z) 
+	return _controlador_entrada.esta_corriendo()
  
  
 # ========================================================= 
 # PORTAL 
 # ========================================================= 
  
-func aplicar_efecto_portal( 
-	nueva_posicion: Vector2, 
-	nueva_velocidad: Vector2 
-) -> void: 
- 
-	global_position = nueva_posicion 
-	velocity = nueva_velocidad 
- 
-	var input_actual := Input.get_axis( 
-		"ui_left", 
-		"ui_right" 
-	) 
- 
-	if Input.is_key_pressed(KEY_A): 
-		input_actual = -1.0 
- 
-	elif Input.is_key_pressed(KEY_D): 
-		input_actual = 1.0 
- 
-	if input_actual != 0.0: 
- 
-		manteniendo_tecla_portal = true 
- 
-		direccion_bloqueada_portal = input_actual 
- 
-		sprite.flip_h = (-input_actual) < 0.0 
- 
-	else: 
- 
-		manteniendo_tecla_portal = false 
- 
-		direccion_bloqueada_portal = 0.0 
- 
-		sprite.flip_h = not sprite.flip_h 
- 
- 
-# ========================================================= 
+func aplicar_efecto_portal(
+	nueva_posicion: Vector2,
+	nueva_velocidad: Vector2
+) -> void:
+	_controlador_portal.aplicar_efecto(nueva_posicion, nueva_velocidad)
+
+
+# =========================================================
 # ANIMACIONES 
 # ========================================================= 
  
@@ -937,30 +462,7 @@ func reproducir_animacion(
 	anim: String, 
 	hacia_atras: bool = false 
 ) -> void: 
- 
-	if not sprite.sprite_frames: 
-		return 
- 
-	if not sprite.sprite_frames.has_animation(anim): 
-		return 
- 
-	sprite.speed_scale = 1.0 
- 
-	if hacia_atras: 
- 
-		if ( 
-			sprite.animation != anim 
-			or not sprite.is_playing() 
-		): 
-			sprite.play_backwards(anim) 
- 
-	else: 
- 
-		if ( 
-			sprite.animation != anim 
-			or not sprite.is_playing() 
-		): 
-			sprite.play(anim) 
+	_controlador_animacion.reproducir(anim, hacia_atras)
  
  
 func _actualizar_animacion_normal( 
@@ -968,25 +470,9 @@ func _actualizar_animacion_normal(
 	agachado: bool, 
 	corriendo: bool 
 ) -> void: 
- 
-	if not is_on_floor(): 
- 
-		reproducir_animacion("jump") 
- 
-	elif agachado: 
- 
-		reproducir_animacion("ducking") 
- 
-	elif direccion != 0.0: 
- 
-		if corriendo: 
-			reproducir_animacion("run") 
-		else: 
-			reproducir_animacion("trot") 
- 
-	else: 
- 
-		reproducir_animacion("standing") 
+	_controlador_animacion.reproducir_locomocion(
+		is_on_floor(), direccion, agachado, corriendo
+	)
  
  
 # ========================================================= 
@@ -999,6 +485,25 @@ func cambiar_estado(nuevo_estado: Estado) -> void:
 		return 
  
 	estado_actual = nuevo_estado 
+
+
+func _establecer_estado_normal() -> void:
+	cambiar_estado(Estado.NORMAL)
+
+
+func _establecer_estado_ataque() -> void:
+	cambiar_estado(Estado.ATAQUE)
+
+
+func _establecer_estado_roll() -> void:
+	cambiar_estado(Estado.ROLL_DIVE)
+
+
+func _establecer_estado_ciclo_vida(nombre_estado: String) -> void:
+	if nombre_estado == "muerto":
+		cambiar_estado(Estado.MUERTO)
+	else:
+		cambiar_estado(Estado.NORMAL)
  
  
 # ========================================================= 
@@ -1011,7 +516,7 @@ func _on_animation_finished() -> void:
  
 		"roll_dive": 
  
-			animacion_roll_terminada = true 
+			_controlador_movimiento.marcar_animacion_roll_terminada()
  
 			if is_on_floor(): 
 				finalizar_roll_dive() 
@@ -1039,91 +544,10 @@ func _on_animation_finished() -> void:
  
 # HITBOX DE ATAQUE 
 func _on_hitbox_ataque_area_entered(area: Area2D) -> void: 
- 
-	# ----------------------------------------------------- 
-	# VALIDACIONES 
-	# ----------------------------------------------------- 
- 
-	if estado_actual != Estado.ATAQUE: 
-		return 
- 
-	if not ataque_hitbox_activo: 
-		return 
- 
-	if collision_hitbox.disabled: 
-		return 
- 
-	if area == null: 
-		return 
- 
-	# ----------------------------------------------------- 
-	# SOLO HURTBOXES DE ENEMIGOS 
-	# ----------------------------------------------------- 
- 
-	if not area.is_in_group("enemy_hurtbox"): 
-		return 
- 
-	# ----------------------------------------------------- 
-	# OBTENER ENEMIGO 
-	# ----------------------------------------------------- 
- 
-	var enemigo := area.get_parent() 
- 
-	if enemigo == null: 
-		return 
- 
-	if not enemigo.is_in_group("enemy"): 
-		return 
- 
-	# ----------------------------------------------------- 
-	# EVITAR DOBLE GOLPE 
-	# ----------------------------------------------------- 
- 
-	if objetivos_golpeados.has(enemigo): 
-		return 
- 
-	objetivos_golpeados.append(enemigo) 
- 
-	# ----------------------------------------------------- 
-	# DIRECCIÓN DEL GOLPE 
-	# ----------------------------------------------------- 
- 
-	var direccion_empuje := 1.0 
- 
-	if sprite.flip_h: 
-		direccion_empuje = -1.0 
- 
-	# ----------------------------------------------------- 
-	# DEBUG 
-	# ----------------------------------------------------- 
- 
-	print("========================================") 
-	print("💥 GOLPE CONECTADO") 
-	print("Enemigo: ", enemigo.name) 
-	print("Frame: ", sprite.frame) 
-	print("Dirección: ", direccion_empuje) 
-	print("========================================") 
- 
-	# -----------------------------------------------------
-	# APLICAR DAÑO
-	# -----------------------------------------------------
-
-	if enemigo.has_method("recibir_dano"):
-
-		enemigo.recibir_dano(
-			DAÑO_ATAQUE,
-			self
-		)
-
-	# -----------------------------------------------------
-	# APLICAR EMPUJE
-	# -----------------------------------------------------
-
-	if enemigo.has_method("recibir_empuje"):
-
-		enemigo.recibir_empuje(
-			direccion_empuje * FUERZA_EMPUJE_ATAQUE
-		) 
+	_controlador_combate.procesar_golpe(
+		area,
+		estado_actual == Estado.ATAQUE
+	)
 		 
 func recibir_empuje( 
 	direccion: float, 
@@ -1132,41 +556,26 @@ func recibir_empuje(
  
 	if estado_actual == Estado.MUERTO: 
 		return 
- 
-	var direccion_segura := signf( 
-		direccion 
-	) 
- 
-	if is_zero_approx( 
-		direccion_segura 
-	): 
-		return 
- 
-	velocidad_knockback = ( 
-		direccion_segura 
-		* FUERZA_KNOCKBACK_ENEMY 
-	) 
- 
-	velocity.y = fuerza_vertical		 
+	velocidad_knockback = _controlador_fisica.iniciar_knockback(
+		direccion,
+		FUERZA_KNOCKBACK_ENEMY,
+		fuerza_vertical
+	)
+
+
+func _limpiar_knockback() -> void:
+	velocidad_knockback = 0.0
  
 # ========================================================= 
 # MUERTE 
 # ========================================================= 
  
 func morir() -> void: 
- 
-	if estado_actual == Estado.MUERTO: 
-		return 
- 
-	terminar_ataque() 
- 
-	cambiar_estado(Estado.MUERTO) 
- 
-	velocity = Vector2.ZERO 
- 
-	reproducir_animacion("fall_on_ground") 
- 
-	jugador_murio.emit() 
+	_controlador_ciclo_vida.morir()
+
+
+func _notificar_muerte() -> void:
+	jugador_murio.emit()
  
  
 func esta_muerto() -> bool: 
@@ -1179,21 +588,7 @@ func esta_muerto() -> bool:
 # ========================================================= 
  
 func reiniciar() -> void: 
- 
-	terminar_ataque() 
- 
-	global_position = posicion_inicial 
- 
-	velocity = Vector2.ZERO 
- 
-	cambiar_estado(Estado.NORMAL) 
- 
-	reiniciar_vida() 
- 
-	manteniendo_tecla_portal = false 
-	direccion_bloqueada_portal = 0.0 
- 
-	reproducir_animacion("standing") 
+	_controlador_ciclo_vida.reiniciar()
  
  
 func _procesar_estado_muerto() -> void: 

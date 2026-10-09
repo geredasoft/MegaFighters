@@ -87,9 +87,16 @@ func _on_body_entered(body: Node2D) -> void:
 	# TELETRANSPORTE
 	# =====================================================
 
-	if body.has_method("aplicar_efecto_portal"):
+	if body is Danable:
+		var viajero := body as Danable
+		viajero.aplicar_efecto_portal(
+			spawn_point.global_position,
+			nueva_velocidad
+		)
 
-		body.aplicar_efecto_portal(
+	elif body.has_method("aplicar_efecto_portal"):
+		body.call(
+			"aplicar_efecto_portal",
 			spawn_point.global_position,
 			nueva_velocidad
 		)
@@ -185,12 +192,3 @@ func _esta_bloqueado(body: Node2D) -> bool:
 		return false
 
 	return true
-
-
-# =========================================================
-# BODY EXITED
-# =========================================================
-
-func _on_body_exited(_body: Node2D) -> void:
-
-	pass
