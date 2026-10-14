@@ -1,8 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cc6m3d5ru5wh2"]
 
 [ext_resource type="Script" uid="uid://3e3qclbnafcp" path="res://scripts/juego.gd" id="1_aqyt2"]
-[ext_resource type="Texture2D" uid="uid://d3lmw0h2cv5b4" path="res://assets/sprites/escenarios/nivel2.png" id="2_aqyt2"]
 [ext_resource type="PackedScene" uid="uid://bokvq3eb8lsij" path="res://scenes/player.tscn" id="3_2mvku"]
+[ext_resource type="Texture2D" uid="uid://c3rj4bgl4dpxu" path="res://assets/sprites/escenarios/nivel3.png" id="3_g7k33"]
 [ext_resource type="Texture2D" uid="uid://bx2wcybu1uv7r" path="res://assets/sprites/physicalAttacks/physicalAttacksPlayerPrincipal/bam1.png" id="4_isqgd"]
 [ext_resource type="Texture2D" uid="uid://cittfucgngeuv" path="res://assets/sprites/physicalAttacks/physicalAttacksPlayerPrincipal/bam2.png" id="5_12may"]
 [ext_resource type="Texture2D" uid="uid://bk8700nhbfd30" path="res://assets/sprites/physicalAttacks/physicalAttacksPlayerPrincipal/krok1.png" id="6_3w3fo"]
@@ -181,72 +181,117 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_27y2h"]
-size = Vector2(202, 8)
+size = Vector2(204.75, 9.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1ilxn"]
-size = Vector2(451.5, 11)
+size = Vector2(74, 11)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_smo16"]
-size = Vector2(274, 7.5)
+size = Vector2(169, 10.75)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
-size = Vector2(108.25, 10.5)
+size = Vector2(57, 10.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_aqyt2"]
-size = Vector2(246, 18)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_buaql"]
-size = Vector2(238, 9)
+size = Vector2(110, 10)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kcnc8"]
-size = Vector2(258.5, 7)
+size = Vector2(75.994995, 9.75)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_b66fj"]
-size = Vector2(194, 24.5)
+size = Vector2(44.5, 11)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2rerw"]
-size = Vector2(257, 7.125)
+size = Vector2(206.5, 17)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_w77d6"]
-size = Vector2(342.5, 29)
+size = Vector2(212, 14.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2mk4e"]
-size = Vector2(371.5, 27.5)
+size = Vector2(82, 19)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g7k33"]
+size = Vector2(33, 2)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2mvku"]
-size = Vector2(241, 7)
+size = Vector2(194, 7.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_isqgd"]
-size = Vector2(194, 7)
+size = Vector2(157, 17)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_12may"]
-size = Vector2(398, 20)
+size = Vector2(180, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fgomt"]
+size = Vector2(295, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3lan6"]
+size = Vector2(62, 21)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u0n8a"]
+size = Vector2(208, 20.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_doo1d"]
+size = Vector2(104, 20.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jh3bu"]
+size = Vector2(264, 20.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_j2psv"]
-size = Vector2(32, 468)
+size = Vector2(17, 145)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ma4t3"]
-size = Vector2(711, 21.5)
+size = Vector2(717.5, 17.75)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nkjvb"]
-size = Vector2(25, 116)
+size = Vector2(22, 228)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xjhar"]
-size = Vector2(335, 21.25)
+size = Vector2(219, 17)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ofuir"]
-size = Vector2(35.5, 78)
+size = Vector2(23, 86)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dxcar"]
-size = Vector2(36.375, 30)
+size = Vector2(22, 74)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3w3fo"]
-size = Vector2(37, 175)
+size = Vector2(219, 18)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_j2oj6"]
+size = Vector2(21, 88)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_c5e2n"]
+size = Vector2(21, 95)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2t7d2"]
+size = Vector2(19.5, 50)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xbyrs"]
+size = Vector2(19.5, 97)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_awd8e"]
+size = Vector2(20, 74)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4hsnk"]
+size = Vector2(20, 70)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vc4ms"]
+size = Vector2(183, 17)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mmu6x"]
+size = Vector2(56.5, 60)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_md3hm"]
+size = Vector2(21, 61)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g08i5"]
+size = Vector2(18.5, 46)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_53mwi"]
-size = Vector2(230.05933, 27.167229)
+size = Vector2(110.72943, 44.07132)
 
-[node name="Nivel3" type="Node2D"]
+[node name="Nivel3" type="Node2D" unique_id=884367092]
 
 [node name="Control" type="Control" parent="." unique_id=1193211094]
 layout_mode = 3
@@ -280,12 +325,12 @@ mensaje_victoria = "¡MISIÓN CUMPLIDA!"
 espera_transicion_victoria = 5.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=153010119]
-position = Vector2(576.50006, 323.49997)
-scale = Vector2(0.71526057, 0.6635897)
-texture = ExtResource("2_aqyt2")
+position = Vector2(576.5, 324)
+scale = Vector2(0.68839717, 0.6886291)
+texture = ExtResource("3_g7k33")
 
 [node name="Player" parent="." unique_id=1225878370 instance=ExtResource("3_2mvku")]
-position = Vector2(352, 169)
+position = Vector2(200, 146)
 metadata/_edit_group_ = true
 
 [node name="AnimatedSprite2D" parent="Player" index="1" unique_id=127046454]
@@ -294,15 +339,16 @@ sprite_frames = SubResource("SpriteFrames_se8yl")
 [node name="Suelos" type="Node2D" parent="." unique_id=1065611799]
 
 [node name="s1" type="StaticBody2D" parent="Suelos" unique_id=747353858]
-position = Vector2(183, 194)
+position = Vector2(227, 169)
 collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s1" unique_id=1305521082]
+position = Vector2(2.375, 0)
 shape = SubResource("RectangleShape2D_27y2h")
 
 [node name="s2" type="StaticBody2D" parent="Suelos" unique_id=1484835244]
-position = Vector2(512, 199)
+position = Vector2(301, 206)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -310,7 +356,7 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_1ilxn")
 
 [node name="s3" type="StaticBody2D" parent="Suelos" unique_id=637019327]
-position = Vector2(531, 278)
+position = Vector2(160, 235)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -318,7 +364,7 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_smo16")
 
 [node name="s4" type="StaticBody2D" parent="Suelos" unique_id=398748689]
-position = Vector2(397, 311)
+position = Vector2(430, 198)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -326,123 +372,152 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_80n4u")
 
 [node name="s5" type="StaticBody2D" parent="Suelos" unique_id=967139853]
-position = Vector2(175, 359)
+position = Vector2(583, 198)
 collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s5" unique_id=949267482]
 shape = SubResource("RectangleShape2D_aqyt2")
 
-[node name="s6" type="StaticBody2D" parent="Suelos" unique_id=702467627]
-position = Vector2(193, -64)
+[node name="s6" type="StaticBody2D" parent="Suelos" unique_id=114458016]
+position = Vector2(527, -268)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Suelos/s6" unique_id=1628519888]
-polygon = PackedVector2Array(105, 414, 162, 470, 169, 477, 168, 485, 149, 485, 148, 476, 104, 434, 97, 433)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Suelos/s6" unique_id=1096929054]
+position = Vector2(-1, -1)
+polygon = PackedVector2Array(137, 434, 111, 462, 111, 472, 141, 443)
 
-[node name="s7" type="StaticBody2D" parent="Suelos" unique_id=1516526761]
-position = Vector2(480, 417)
+[node name="s7" type="StaticBody2D" parent="Suelos" unique_id=184745878]
+position = Vector2(703.88, 169.88)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s7" unique_id=1024291481]
-shape = SubResource("RectangleShape2D_buaql")
-
-[node name="s8" type="StaticBody2D" parent="Suelos" unique_id=184745878]
-position = Vector2(467, 474)
-collision_mask = 6
-metadata/_edit_group_ = true
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s8" unique_id=44764688]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s7" unique_id=44764688]
+position = Vector2(-2.8775024, 0)
 shape = SubResource("RectangleShape2D_kcnc8")
 
-[node name="s9" type="StaticBody2D" parent="Suelos" unique_id=1590351844]
-position = Vector2(149, 535)
+[node name="s8" type="StaticBody2D" parent="Suelos" unique_id=1590351844]
+position = Vector2(780, 211)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s9" unique_id=1337685370]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s8" unique_id=1337685370]
+position = Vector2(12.25, 0)
 shape = SubResource("RectangleShape2D_b66fj")
 
-[node name="s10" type="StaticBody2D" parent="Suelos" unique_id=1991192596]
-position = Vector2(141, 108.74)
+[node name="s9" type="StaticBody2D" parent="Suelos" unique_id=327834279]
+position = Vector2(180, 309)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Suelos/s10" unique_id=1249917301]
-polygon = PackedVector2Array(105, 414, 162, 470, 169, 477, 171, 485.26, 149, 485, 148, 476, 104, 434, 97, 433)
-
-[node name="s11" type="StaticBody2D" parent="Suelos" unique_id=327834279]
-position = Vector2(468, 529)
-collision_mask = 6
-metadata/_edit_group_ = true
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s11" unique_id=1002545541]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s9" unique_id=1002545541]
+position = Vector2(-1.25, 0)
 shape = SubResource("RectangleShape2D_2rerw")
 
-[node name="s12" type="StaticBody2D" parent="Suelos" unique_id=1257789701]
-position = Vector2(482, 607)
+[node name="s10" type="StaticBody2D" parent="Suelos" unique_id=1257789701]
+position = Vector2(525, 310)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s12" unique_id=278891114]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s10" unique_id=278891114]
 shape = SubResource("RectangleShape2D_w77d6")
 
-[node name="s13" type="StaticBody2D" parent="Suelos" unique_id=114458016]
-position = Vector2(577, 109)
+[node name="s11" type="StaticBody2D" parent="Suelos" unique_id=965040117]
+position = Vector2(321, 385)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Suelos/s13" unique_id=1096929054]
-position = Vector2(-1, -1)
-polygon = PackedVector2Array(149, 415, 73, 484, 73, 512, 92, 512, 92, 497, 104, 497, 165, 442, 178, 441)
-
-[node name="s14" type="StaticBody2D" parent="Suelos" unique_id=965040117]
-position = Vector2(911, 537)
-collision_mask = 6
-metadata/_edit_group_ = true
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s14" unique_id=377863030]
-position = Vector2(-0.25, -0.25)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s11" unique_id=377863030]
 shape = SubResource("RectangleShape2D_2mk4e")
 
-[node name="s15" type="StaticBody2D" parent="Suelos" unique_id=906860542]
-position = Vector2(875, 423)
+[node name="s12" type="StaticBody2D" parent="Suelos" unique_id=1816151475]
+position = Vector2(430, 399)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s15" unique_id=45651940]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s12" unique_id=289146430]
+position = Vector2(-0.5, -2)
+shape = SubResource("RectangleShape2D_g7k33")
+
+[node name="s13" type="StaticBody2D" parent="Suelos" unique_id=906860542]
+position = Vector2(544, 403)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s13" unique_id=45651940]
 shape = SubResource("RectangleShape2D_2mvku")
 
-[node name="s16" type="StaticBody2D" parent="Suelos" unique_id=1992964085]
-position = Vector2(961, 368)
+[node name="s14" type="StaticBody2D" parent="Suelos" unique_id=1992964085]
+position = Vector2(154, 503)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s16" unique_id=946069745]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s14" unique_id=946069745]
 shape = SubResource("RectangleShape2D_isqgd")
 
-[node name="s17" type="StaticBody2D" parent="Suelos" unique_id=1015990520]
-position = Vector2(938, 265)
+[node name="s15" type="StaticBody2D" parent="Suelos" unique_id=1015990520]
+position = Vector2(323, 576)
 collision_mask = 6
 metadata/_edit_group_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s17" unique_id=480882056]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s15" unique_id=480882056]
 shape = SubResource("RectangleShape2D_12may")
+
+[node name="s16" type="StaticBody2D" parent="Suelos" unique_id=1307801853]
+position = Vector2(560, 479)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s16" unique_id=628094620]
+shape = SubResource("RectangleShape2D_fgomt")
+
+[node name="s17" type="StaticBody2D" parent="Suelos" unique_id=1081054171]
+position = Vector2(739, 528)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s17" unique_id=1508871936]
+shape = SubResource("RectangleShape2D_3lan6")
+
+[node name="s18" type="StaticBody2D" parent="Suelos" unique_id=1828143154]
+position = Vector2(873, 622)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s18" unique_id=809000684]
+shape = SubResource("RectangleShape2D_u0n8a")
+
+[node name="s19" type="StaticBody2D" parent="Suelos" unique_id=1038450853]
+position = Vector2(1028, 527)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s19" unique_id=2054748193]
+position = Vector2(-1, 0)
+shape = SubResource("RectangleShape2D_doo1d")
+
+[node name="s20" type="StaticBody2D" parent="Suelos" unique_id=162951134]
+position = Vector2(947, 314)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Suelos/s20" unique_id=585379131]
+shape = SubResource("RectangleShape2D_jh3bu")
 
 [node name="Paredes" type="Node2D" parent="." unique_id=449639509]
 
 [node name="p1" type="StaticBody2D" parent="Paredes" unique_id=1043969393]
-position = Vector2(35, 299)
+position = Vector2(87, 90)
 collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p1" unique_id=19364068]
+position = Vector2(-1.5, 0)
 shape = SubResource("RectangleShape2D_j2psv")
 
 [node name="p2" type="StaticBody2D" parent="Paredes" unique_id=304252979]
-position = Vector2(407, 51)
+position = Vector2(455, 26)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -450,7 +525,7 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_ma4t3")
 
 [node name="p3" type="StaticBody2D" parent="Paredes" unique_id=2116162982]
-position = Vector2(749, 121)
+position = Vector2(826, 131)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -458,7 +533,7 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_nkjvb")
 
 [node name="p4" type="StaticBody2D" parent="Paredes" unique_id=1481702950]
-position = Vector2(932, 120)
+position = Vector2(947, 172)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -466,7 +541,7 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_xjhar")
 
 [node name="p5" type="StaticBody2D" parent="Paredes" unique_id=510295387]
-position = Vector2(1117, 165)
+position = Vector2(1069, 207)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -474,7 +549,7 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_ofuir")
 
 [node name="p6" type="StaticBody2D" parent="Paredes" unique_id=1348195582]
-position = Vector2(1117, 290)
+position = Vector2(826, 361)
 collision_mask = 6
 metadata/_edit_group_ = true
 
@@ -482,77 +557,217 @@ metadata/_edit_group_ = true
 shape = SubResource("RectangleShape2D_dxcar")
 
 [node name="p7" type="StaticBody2D" parent="Paredes" unique_id=610172537]
-position = Vector2(1118, 447)
+position = Vector2(947, 387)
 collision_mask = 6
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p7" unique_id=401540992]
 shape = SubResource("RectangleShape2D_3w3fo")
 
-[node name="Portal1" parent="." unique_id=1961145753 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
-position = Vector2(1081, 264)
+[node name="p8" type="StaticBody2D" parent="Paredes" unique_id=955895796]
+position = Vector2(1069, 421)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p8" unique_id=900650387]
+shape = SubResource("RectangleShape2D_j2oj6")
+
+[node name="p9" type="StaticBody2D" parent="Paredes" unique_id=1801749271]
+position = Vector2(987, 585)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p9" unique_id=590169087]
+position = Vector2(0, -1.5)
+shape = SubResource("RectangleShape2D_c5e2n")
+
+[node name="p10" type="StaticBody2D" parent="Paredes" unique_id=45966565]
+position = Vector2(759, 586)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p10" unique_id=1652204644]
+shape = SubResource("RectangleShape2D_c5e2n")
+
+[node name="p11" type="StaticBody2D" parent="Paredes" unique_id=1280191533]
+position = Vector2(698, 514)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p11" unique_id=1107522503]
+shape = SubResource("RectangleShape2D_2t7d2")
+
+[node name="p12" type="StaticBody2D" parent="Paredes" unique_id=1992345261]
+position = Vector2(423, 538)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p12" unique_id=23288899]
+shape = SubResource("RectangleShape2D_xbyrs")
+
+[node name="p13" type="StaticBody2D" parent="Paredes" unique_id=1965515581]
+position = Vector2(223, 549)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p13" unique_id=2078890784]
+shape = SubResource("RectangleShape2D_awd8e")
+
+[node name="p14" type="StaticBody2D" parent="Paredes" unique_id=1786259907]
+position = Vector2(86, 413)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p14" unique_id=346599463]
+shape = SubResource("RectangleShape2D_4hsnk")
+
+[node name="p15" type="StaticBody2D" parent="Paredes" unique_id=2082980360]
+position = Vector2(190, 386)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p15" unique_id=780400946]
+shape = SubResource("RectangleShape2D_vc4ms")
+
+[node name="p16" type="StaticBody2D" parent="Paredes" unique_id=262124170]
+position = Vector2(255, 347)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p16" unique_id=1240178365]
+position = Vector2(-1.25, 0)
+shape = SubResource("RectangleShape2D_mmu6x")
+
+[node name="p17" type="StaticBody2D" parent="Paredes" unique_id=1233449465]
+position = Vector2(86, 270)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p17" unique_id=216624937]
+shape = SubResource("RectangleShape2D_md3hm")
+
+[node name="p18" type="StaticBody2D" parent="Paredes" unique_id=5114654]
+position = Vector2(304, 58)
+collision_mask = 6
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p18" unique_id=1797849488]
+shape = SubResource("RectangleShape2D_g08i5")
+
+[node name="Portal1" parent="." unique_id=1851884324 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
+position = Vector2(87, 197)
+scale = Vector2(1, 0.9)
 otro_portal = NodePath(".")
 
 [node name="CollisionShape2D" parent="Portal1" index="0" unique_id=1639346159]
-position = Vector2(42, -33)
+position = Vector2(-17, 0)
+scale = Vector2(1, 1.5)
 
 [node name="SpawnPoint" parent="Portal1" index="1" unique_id=2108312081]
-position = Vector2(22, 84)
+position = Vector2(20, 318.88892)
 
-[node name="Portal2" parent="." unique_id=755507736 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
-position = Vector2(1082, 473)
+[node name="Portal2" parent="." unique_id=1413224791 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
+position = Vector2(87, 473.00003)
+scale = Vector2(1, 0.9)
 otro_portal = NodePath(".")
 
 [node name="CollisionShape2D" parent="Portal2" index="0" unique_id=1639346159]
-position = Vector2(41, -138)
+position = Vector2(-15, -3.390842e-05)
 
 [node name="SpawnPoint" parent="Portal2" index="1" unique_id=2108312081]
-position = Vector2(23, -228)
+position = Vector2(23, -281.11115)
+
+[node name="Portal3" parent="." unique_id=1961145753 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
+position = Vector2(1067, 277)
+otro_portal = NodePath(".")
+
+[node name="CollisionShape2D" parent="Portal3" index="0" unique_id=1639346159]
+position = Vector2(16, 0)
+scale = Vector2(1, 1.1)
+
+[node name="SpawnPoint" parent="Portal3" index="1" unique_id=2108312081]
+position = Vector2(-21, 228)
+
+[node name="Portal4" parent="." unique_id=755507736 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
+position = Vector2(1068, 492)
+otro_portal = NodePath(".")
+
+[node name="CollisionShape2D" parent="Portal4" index="0" unique_id=1639346159]
+position = Vector2(14, 0)
+scale = Vector2(1, 1.05)
+
+[node name="SpawnPoint" parent="Portal4" index="1" unique_id=2108312081]
+position = Vector2(-22, -200)
 
 [node name="Escalera1" parent="." unique_id=997264052 instance=ExtResource("34_7758k")]
-position = Vector2(64, 208)
-scale = Vector2(1, 0.6)
+position = Vector2(110.00001, 186)
+scale = Vector2(0.833, 0.25)
 metadata/_edit_group_ = true
 
-[node name="Escalera2" parent="." unique_id=204534297 instance=ExtResource("34_7758k")]
-position = Vector2(1083, 425)
-scale = Vector2(1, 0.8)
+[node name="CollisionShape2D" parent="Escalera1" index="0" unique_id=2140339873]
+scale = Vector2(1, 1.2)
+
+[node name="Escalera2" parent="." unique_id=1598552712 instance=ExtResource("34_7758k")]
+position = Vector2(301, 330)
 metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" parent="Escalera2" index="0" unique_id=2140339873]
+scale = Vector2(1, 0.4)
+
+[node name="Escalera3" parent="." unique_id=1558610811 instance=ExtResource("34_7758k")]
+position = Vector2(245, 516)
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" parent="Escalera3" index="0" unique_id=2140339873]
+scale = Vector2(1, 0.3)
+
+[node name="Escalera4" parent="." unique_id=1709726344 instance=ExtResource("34_7758k")]
+position = Vector2(759, 180)
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" parent="Escalera4" index="0" unique_id=2140339873]
+scale = Vector2(1, 0.2)
 
 [node name="PlataformaMovil1" parent="." unique_id=52023812 instance=ExtResource("35_2ojkb")]
-position = Vector2(302, 471)
+position = Vector2(377, 446)
 direccion = 1
-distancia = 60.0
+distancia = 100.0
 velocidad = 50.0
 
 [node name="PlataformaMovil2" parent="." unique_id=865752032 instance=ExtResource("35_2ojkb")]
-position = Vector2(637, 350)
+position = Vector2(685, 259)
 direccion = 1
 distancia = 180.0
+velocidad = 70.0
+
+[node name="PlataformaMovil" parent="." unique_id=1408543369 instance=ExtResource("35_2ojkb")]
+position = Vector2(805, 520)
+distancia = 130.0
+velocidad = 60.0
 
 [node name="EnemySpawner" type="Node2D" parent="." unique_id=490894253]
 script = ExtResource("36_tonsb")
 
 [node name="SpawnPoint1" type="Marker2D" parent="EnemySpawner" unique_id=37766033]
-position = Vector2(223, 173)
+position = Vector2(271, 150)
 
 [node name="SpawnPoint2" type="Marker2D" parent="EnemySpawner" unique_id=784059842]
 position = Vector2(620, 176)
 
 [node name="SpawnPoint3" type="Marker2D" parent="EnemySpawner" unique_id=1071059665]
-position = Vector2(135, 336)
+position = Vector2(207, 287)
 
 [node name="SpawnPoint4" type="Marker2D" parent="EnemySpawner" unique_id=684924004]
-position = Vector2(576, 253)
+position = Vector2(545, 294)
 
 [node name="SpawnPoint5" type="Marker2D" parent="EnemySpawner" unique_id=1939302627]
-position = Vector2(962, 238)
+position = Vector2(931, 285)
 
 [node name="SpawnPoint6" type="Marker2D" parent="EnemySpawner" unique_id=1319126155]
-position = Vector2(813, 402)
+position = Vector2(551, 455)
 
 [node name="Agua" type="Area2D" parent="." unique_id=28014809]
-position = Vector2(485.99997, 570.00006)
+position = Vector2(877, 570.00006)
 scale = Vector2(1.8603897, 1.6564101)
 collision_mask = 6
 gravity_space_override = 3
@@ -565,7 +780,7 @@ script = ExtResource("37_444yh")
 metadata/_edit_group_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Agua" unique_id=260274292]
-position = Vector2(-0.5375061, 0.30181885)
+position = Vector2(-2.149994, 3.9240723)
 shape = SubResource("RectangleShape2D_53mwi")
 one_way_collision_direction = Vector2(0, -1)
 
@@ -573,32 +788,38 @@ one_way_collision_direction = Vector2(0, -1)
 script = ExtResource("38_huegp")
 
 [node name="Spawn1" type="Marker2D" parent="PuntosArmas" unique_id=1979380759]
-position = Vector2(129, 176)
+position = Vector2(155, 149)
 
 [node name="Spawn2" type="Marker2D" parent="PuntosArmas" unique_id=1202532072]
-position = Vector2(669, 177)
+position = Vector2(722, 146)
 
 [node name="Spawn3" type="Marker2D" parent="PuntosArmas" unique_id=1800172208]
-position = Vector2(463, 258)
+position = Vector2(490, 289)
 
 [node name="Spawn4" type="Marker2D" parent="PuntosArmas" unique_id=51516019]
-position = Vector2(236, 336)
+position = Vector2(310, 548)
 
 [node name="Spawn5" type="Marker2D" parent="PuntosArmas" unique_id=950049669]
-position = Vector2(428, 391)
+position = Vector2(667, 446)
 
 [node name="Spawn6" type="Marker2D" parent="PuntosArmas" unique_id=602258615]
-position = Vector2(101, 504)
+position = Vector2(997, 287)
 
 [node name="Spawn7" type="Marker2D" parent="PuntosArmas" unique_id=2074887774]
-position = Vector2(911, 237)
+position = Vector2(178, 471)
 
 [node name="Spawn8" type="Marker2D" parent="PuntosArmas" unique_id=609845683]
-position = Vector2(976, 507)
+position = Vector2(1015, 499)
 
 [node name="Hub" parent="." unique_id=1506832321 node_paths=PackedStringArray("jugador", "enemy_spawner") instance=ExtResource("39_p60g2")]
 jugador = NodePath("../Player")
 enemy_spawner = NodePath("../EnemySpawner")
+
+[node name="MarginContainerPlayer" parent="Hub/Control" parent_id_path=PackedInt32Array(1506832321, 1211127532) index="0" unique_id=114318296]
+offset_left = 13.0
+offset_top = 6.0
+offset_right = 246.0
+offset_bottom = 64.0
 
 [connection signal="jugador_murio" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_jugador_murio"]
 [connection signal="solicitado_reiniciar" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_solicitado_reiniciar"]
@@ -608,8 +829,13 @@ enemy_spawner = NodePath("../EnemySpawner")
 [editable path="Player"]
 [editable path="Portal1"]
 [editable path="Portal2"]
+[editable path="Portal3"]
+[editable path="Portal4"]
 [editable path="Escalera1"]
 [editable path="Escalera2"]
+[editable path="Escalera3"]
+[editable path="Escalera4"]
 [editable path="PlataformaMovil1"]
 [editable path="PlataformaMovil2"]
+[editable path="PlataformaMovil"]
 [editable path="Hub"]

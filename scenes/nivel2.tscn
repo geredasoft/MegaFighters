@@ -39,7 +39,7 @@
 [ext_resource type="Script" uid="uid://c1rkraxdd6c2i" path="res://scripts/agua.gd" id="37_444yh"]
 [ext_resource type="Script" uid="uid://bbr1mhu717bus" path="res://scripts/SpawnArmas.gd" id="38_huegp"]
 [ext_resource type="PackedScene" uid="uid://cqdfweb16n405" path="res://scenes/hub.tscn" id="39_p60g2"]
-[ext_resource type="PackedScene" path="res://scenes/nivel3.tscn" id="40_nivel3"]
+[ext_resource type="PackedScene" uid="uid://cc6m3d5ru5wh2" path="res://scenes/nivel3.tscn" id="40_nivel3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sodyg"]
 atlas = ExtResource("15_mgoay")
@@ -276,7 +276,9 @@ script = ExtResource("1_aqyt2")
 jugador = NodePath("../../../Player")
 enemy_spawner = NodePath("../../../EnemySpawner")
 escena_siguiente = ExtResource("40_nivel3")
-mensaje_victoria = "¡NIVEL 2 COMPLETADO!\n\nPresiona ENTER para continuar al Nivel 3."
+mensaje_victoria = "¡NIVEL 2 COMPLETADO!
+
+Presiona ENTER para continuar al Nivel 3."
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=153010119]
 position = Vector2(576.50006, 323.49997)
@@ -598,6 +600,12 @@ position = Vector2(976, 507)
 [node name="Hub" parent="." unique_id=1506832321 node_paths=PackedStringArray("jugador", "enemy_spawner") instance=ExtResource("39_p60g2")]
 jugador = NodePath("../Player")
 enemy_spawner = NodePath("../EnemySpawner")
+
+[node name="MarginContainerPlayer" parent="Hub/Control" parent_id_path=PackedInt32Array(1506832321, 1211127532) index="0" unique_id=114318296]
+offset_left = 6.0
+offset_top = -2.0
+offset_right = 239.0
+offset_bottom = 56.0
 
 [connection signal="jugador_murio" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_jugador_murio"]
 [connection signal="solicitado_reiniciar" from="Player" to="Control/CenterContainer/Mensajes" method="_on_player_solicitado_reiniciar"]
