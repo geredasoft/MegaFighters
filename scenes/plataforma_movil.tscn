@@ -13,6 +13,7 @@ script = ExtResource("1_g5r2e")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2111444469]
+texture_filter = 1
 scale = Vector2(1, 0.08789062)
 texture = SubResource("DrawableTexture2D_eo76q")
 
