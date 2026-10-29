@@ -172,6 +172,7 @@ vida_maxima = null
 shape = SubResource("RectangleShape2D_oirhb")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=127046454]
+texture_filter = 1
 scale = Vector2(2.1428568, 1.6666656)
 sprite_frames = SubResource("SpriteFrames_80n4u")
 animation = &"attack"

@@ -281,6 +281,7 @@ mensaje_victoria = "¡NIVEL 2 COMPLETADO!
 Presiona ENTER para continuar al Nivel 3."
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=153010119]
+texture_filter = 1
 position = Vector2(576.50006, 323.49997)
 scale = Vector2(0.71526057, 0.6635897)
 texture = ExtResource("2_aqyt2")
