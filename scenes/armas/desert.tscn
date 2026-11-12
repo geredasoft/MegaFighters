@@ -2,6 +2,11 @@
 
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_f5ogq"]
 [ext_resource type="Texture2D" uid="uid://b57yoixk6wf5o" path="res://assets/sprites/armas/desert.png" id="2_f5ogq"]
+[ext_resource type="Script" uid="uid://c3bmnejsngmnq" path="res://scripts/misc/extra/datos_bala.gd" id="2_pi23p"]
+
+[sub_resource type="Resource" id="Resource_67gx3"]
+script = ExtResource("2_pi23p")
+metadata/_custom_type_script = "uid://c3bmnejsngmnq"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(16, 10)
@@ -9,6 +14,10 @@ size = Vector2(16, 10)
 [node name="Desert" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
 script = ExtResource("1_f5ogq")
+municion = 12
+dano = 15
+cadencia_ms = 400
+datos = SubResource("Resource_67gx3")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]

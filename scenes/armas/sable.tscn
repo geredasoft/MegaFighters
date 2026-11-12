@@ -2,6 +2,13 @@
 
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_6jvye"]
 [ext_resource type="Texture2D" uid="uid://dpn0r776ftof1" path="res://assets/sprites/armas/sable.png" id="2_6jvye"]
+[ext_resource type="Script" uid="uid://r8e3qm75qv2s" path="res://scripts/misc/extra/datos_arma_blanca.gd" id="2_accwe"]
+
+[sub_resource type="Resource" id="Resource_lioqc"]
+script = ExtResource("2_accwe")
+distancia = 4.0
+multiplicador = 2.0
+metadata/_custom_type_script = "uid://r8e3qm75qv2s"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(32, 8)
@@ -9,6 +16,9 @@ size = Vector2(32, 8)
 [node name="Sable" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
 script = ExtResource("1_6jvye")
+proyectil = 5
+cadencia_ms = 800
+datos = SubResource("Resource_lioqc")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]

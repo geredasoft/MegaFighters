@@ -1,7 +1,12 @@
 [gd_scene format=3 uid="uid://hy4pjqcu25x"]
 
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_utrx7"]
+[ext_resource type="Script" uid="uid://c3bmnejsngmnq" path="res://scripts/misc/extra/datos_bala.gd" id="2_70x86"]
 [ext_resource type="Texture2D" uid="uid://bn4mtftjmtbgi" path="res://assets/sprites/armas/snyper.png" id="2_utrx7"]
+
+[sub_resource type="Resource" id="Resource_utrx7"]
+script = ExtResource("2_70x86")
+metadata/_custom_type_script = "uid://c3bmnejsngmnq"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(40, 14)
@@ -9,6 +14,11 @@ size = Vector2(40, 14)
 [node name="Snyper" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
 script = ExtResource("1_utrx7")
+dos_manos = true
+municion = 4
+dano = 100
+cadencia_ms = 5000
+datos = SubResource("Resource_utrx7")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]

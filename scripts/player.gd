@@ -234,7 +234,9 @@ var damping_entorno := 0.0
 # VARIABLES - COMBATE 
 # ========================================================= 
  
-var velocidad_knockback: float = 0.0 
+var velocidad_knockback: float = 0.0
+@onready var sprite_arma: Sprite2D = $SpriteArma
+var arma_actual: ArmaParams = null
  
 # ========================================================= 
 # CICLO DE VIDA 
@@ -243,7 +245,8 @@ var velocidad_knockback: float = 0.0
 func _ready() -> void: 
  
 	add_to_group("Player") 
- 
+	
+	sprite_arma.visible = false
 	_controlador_ciclo_vida = PlayerLifecycleControllerScript.new(
 		self,
 		{
@@ -613,3 +616,8 @@ func cambiar_gravedad(invertir: bool = true) -> void:
 func aplicar_damping(x: float = 0.0) -> void: 
  
 	damping_entorno = maxf(x, 0.0)
+
+func equipar_arma(params: ArmaParams) -> void:
+	arma_actual = params
+	sprite_arma.texture = params.textura
+	sprite_arma.visible = params.textura != null

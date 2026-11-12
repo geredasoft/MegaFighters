@@ -155,6 +155,10 @@ script = ExtResource("1_ujl30")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1819727561]
 shape = SubResource("RectangleShape2D_oirhb")
 
+[node name="SpriteArma" type="Sprite2D" parent="." unique_id=220434996]
+position = Vector2(7, -6)
+scale = Vector2(1, 1.0000001)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=127046454]
 texture_filter = 1
 scale = Vector2(2.1428568, 1.6666656)

@@ -271,12 +271,20 @@ var posicion_inicial: Vector2 = Vector2.ZERO
 
 var velocidad_knockback: float = 0.0
 
+# ========================================================
+# 18. DATOS DE EQUIPABLES
+# ========================================================
+
+@onready var sprite_arma: Sprite2D = $SpriteArma
+var arma_actual: ArmaParams = null
 
 # =========================================================
 # 19. CICLO DE VIDA - READY
 # =========================================================
 
 func _ready() -> void:
+
+	sprite_arma.visible = false
 
 	_sensor_entorno = EnemyWorldSensorScript.new(
 		self,
@@ -1184,3 +1192,8 @@ func aplicar_damping(
 		x,
 		0.0
 	)
+	
+func equipar_arma(params: ArmaParams) -> void:
+	arma_actual = params
+	sprite_arma.texture = params.textura
+	sprite_arma.visible = params.textura != null

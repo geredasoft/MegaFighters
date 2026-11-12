@@ -2,6 +2,13 @@
 
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_iy5p6"]
 [ext_resource type="Texture2D" uid="uid://buydx251ba43u" path="res://assets/sprites/armas/machete.png" id="2_iy5p6"]
+[ext_resource type="Script" uid="uid://r8e3qm75qv2s" path="res://scripts/misc/extra/datos_arma_blanca.gd" id="2_kl2c7"]
+
+[sub_resource type="Resource" id="Resource_1f82d"]
+script = ExtResource("2_kl2c7")
+distancia = 3.0
+multiplicador = 2.0
+metadata/_custom_type_script = "uid://r8e3qm75qv2s"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(24, 6)
@@ -9,6 +16,9 @@ size = Vector2(24, 6)
 [node name="Machete" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
 script = ExtResource("1_iy5p6")
+proyectil = 5
+cadencia_ms = 625
+datos = SubResource("Resource_1f82d")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]

@@ -2,6 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://c51je6vxcbj2h" path="res://assets/sprites/armas/basuca.png" id="1_fo4ou"]
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_kqdt6"]
+[ext_resource type="Script" uid="uid://cogos6n8kk6r8" path="res://scripts/misc/extra/datos_explosion.gd" id="2_p2evw"]
+
+[sub_resource type="Resource" id="Resource_ujl30"]
+script = ExtResource("2_p2evw")
+radio = 3.0
+empuje = 1.0
+velocidad = 10.0
+metadata/_custom_type_script = "uid://cogos6n8kk6r8"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(36, 18)
@@ -9,6 +17,12 @@ size = Vector2(36, 18)
 [node name="Basuca" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
 script = ExtResource("1_kqdt6")
+dos_manos = true
+municion = 3
+proyectil = 1
+dano = 100
+cadencia_ms = 5000
+datos = SubResource("Resource_ujl30")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]

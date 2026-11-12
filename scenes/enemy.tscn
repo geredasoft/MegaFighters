@@ -164,12 +164,11 @@ size = Vector2(5, 5)
 [node name="Enemy" type="CharacterBody2D" unique_id=1225878370 groups=["enemy"]]
 collision_layer = 4
 script = ExtResource("1_2mchx")
-perseguir_jugador = null
-mascara_terreno = null
-vida_maxima = null
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1819727561]
 shape = SubResource("RectangleShape2D_oirhb")
+
+[node name="SpriteArma" type="Sprite2D" parent="." unique_id=1824937314]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=127046454]
 texture_filter = 1
