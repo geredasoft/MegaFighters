@@ -16,6 +16,7 @@ size = Vector2(36, 18)
 
 [node name="Basuca" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_kqdt6")
 dos_manos = true
 municion = 3

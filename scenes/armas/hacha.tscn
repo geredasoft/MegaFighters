@@ -15,6 +15,7 @@ size = Vector2(27.272728, 12.727272)
 
 [node name="Hacha" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_ngn37")
 proyectil = 5
 cadencia_ms = 900

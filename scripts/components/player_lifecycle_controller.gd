@@ -10,6 +10,7 @@ var _animar: Callable
 var _reiniciar_vida: Callable
 var _limpiar_input_portal: Callable
 var _notificar_muerte: Callable
+var _eliminar_arma: Callable
 var _posicion_inicial: Vector2 = Vector2.ZERO
 
 
@@ -23,6 +24,7 @@ func _init(jugador: CharacterBody2D, callbacks: Dictionary) -> void:
 	_reiniciar_vida = callbacks["reiniciar_vida"]
 	_limpiar_input_portal = callbacks["limpiar_input_portal"]
 	_notificar_muerte = callbacks["notificar_muerte"]
+	_eliminar_arma = callbacks["eliminar_arma"]
 
 
 func establecer_posicion_inicial(posicion: Vector2) -> void:
@@ -38,6 +40,7 @@ func morir() -> void:
 	_jugador.velocity = Vector2.ZERO
 	_animar.call("fall_on_ground")
 	_notificar_muerte.call()
+	_eliminar_arma.call()
 
 
 func reiniciar() -> void:

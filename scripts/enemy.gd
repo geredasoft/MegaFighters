@@ -68,6 +68,8 @@ const DESACELERACION: float = 1100.0
 const FUERZA_SALTO: float = -490.0
 const GRAVEDAD: float = 1200.0
 
+const OFFSET_ARMA_X: float = 14.0
+
 
 # =========================================================
 # 02. CONFIGURACIÓN - IA / DETECCIÓN
@@ -277,6 +279,7 @@ var velocidad_knockback: float = 0.0
 
 @onready var sprite_arma: Sprite2D = $SpriteArma
 var arma_actual: ArmaParams = null
+var z_index_sprite_arma_original: float = 0
 
 # =========================================================
 # 19. CICLO DE VIDA - READY
@@ -285,7 +288,8 @@ var arma_actual: ArmaParams = null
 func _ready() -> void:
 
 	sprite_arma.visible = false
-
+	
+	z_index_sprite_arma_original = sprite_arma.z_index
 	_sensor_entorno = EnemyWorldSensorScript.new(
 		self,
 		mascara_terreno
@@ -388,7 +392,8 @@ func _ready() -> void:
 			"reproducir_animacion": Callable(self, "reproducir_animacion"),
 			"restaurar_datos": Callable(self, "_restaurar_datos_iniciales"),
 			"actualizar_origen_patrulla": Callable(self, "_actualizar_origen_patrulla"),
-			"reiniciar_vida": Callable(self, "reiniciar_vida")
+			"reiniciar_vida": Callable(self, "reiniciar_vida"),
+			"eliminar_arma": Callable(self, "eliminar_arma")
 		}
 	)
 
@@ -526,6 +531,7 @@ func _physics_process(delta: float) -> void:
 	# -----------------------------------------------------
 
 	move_and_slide()
+	_actualizar_direccion_arma()
 
 
 # =========================================================
@@ -844,6 +850,24 @@ func desactivar_hitbox_ataque() -> void:
 
 func actualizar_direccion_hitbox() -> void:
 	_controlador_combate.actualizar_direccion_hitbox()
+	_actualizar_direccion_arma()
+	
+func _actualizar_direccion_arma() -> void:
+	if arma_actual == null:
+		return
+
+	sprite_arma.flip_h = sprite.flip_h
+	if arma_actual.proyectil == ArmaParams.TipoProyectil.ARMA_BLANCA:
+		sprite_arma.rotation_degrees = -90
+	# una linea como la de abajo puede ser utilizada en caso el jugador o
+	# enemigo esté usando activamente el arma
+	# fuera de eso, lo preferible es que el arma no tenga offset
+	# sprite_arma.position.x = -OFFSET_ARMA_X if sprite.flip_h else OFFSET_ARMA_X
+	
+	# Actualmente los enemigos no tienen la capacidad de utilizar escaleras
+	# En caso se implemente, también está esta línea de código
+	# sprite_arma.z_index = 999 if estado == Estado.ESCALANDO else z_index_sprite_arma_original
+	
 
 
 func _on_hitbox_ataque_area_entered(area: Area2D) -> void:
@@ -1192,8 +1216,14 @@ func aplicar_damping(
 		x,
 		0.0
 	)
-	
+
+
 func equipar_arma(params: ArmaParams) -> void:
 	arma_actual = params
 	sprite_arma.texture = params.textura
 	sprite_arma.visible = params.textura != null
+
+func eliminar_arma() -> void:
+	arma_actual = null
+	sprite_arma.texture = null
+	sprite_arma.visible = false

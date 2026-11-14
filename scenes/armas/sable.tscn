@@ -15,6 +15,7 @@ size = Vector2(32, 8)
 
 [node name="Sable" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_6jvye")
 proyectil = 5
 cadencia_ms = 800

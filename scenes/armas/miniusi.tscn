@@ -14,6 +14,7 @@ size = Vector2(14, 14)
 
 [node name="Miniusi" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_p1bps")
 municion = 25
 dano = 3

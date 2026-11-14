@@ -13,6 +13,7 @@ size = Vector2(40, 14)
 
 [node name="Snyper" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_utrx7")
 dos_manos = true
 municion = 4

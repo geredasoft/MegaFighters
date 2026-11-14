@@ -169,6 +169,7 @@ script = ExtResource("1_2mchx")
 shape = SubResource("RectangleShape2D_oirhb")
 
 [node name="SpriteArma" type="Sprite2D" parent="." unique_id=1824937314]
+position = Vector2(0, -6)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=127046454]
 texture_filter = 1

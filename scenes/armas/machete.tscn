@@ -15,6 +15,7 @@ size = Vector2(24, 6)
 
 [node name="Machete" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_iy5p6")
 proyectil = 5
 cadencia_ms = 625

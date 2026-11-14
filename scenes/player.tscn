@@ -156,7 +156,7 @@ script = ExtResource("1_ujl30")
 shape = SubResource("RectangleShape2D_oirhb")
 
 [node name="SpriteArma" type="Sprite2D" parent="." unique_id=220434996]
-position = Vector2(7, -6)
+position = Vector2(0, -6)
 scale = Vector2(1, 1.0000001)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=127046454]
