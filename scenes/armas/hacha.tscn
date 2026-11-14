@@ -2,13 +2,24 @@
 
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_ngn37"]
 [ext_resource type="Texture2D" uid="uid://bqiesr7fa33wu" path="res://assets/sprites/armas/hacha.png" id="2_ngn37"]
+[ext_resource type="Script" uid="uid://r8e3qm75qv2s" path="res://scripts/misc/extra/datos_arma_blanca.gd" id="2_puii6"]
+
+[sub_resource type="Resource" id="Resource_qaulx"]
+script = ExtResource("2_puii6")
+distancia = 3.0
+multiplicador = 3.0
+metadata/_custom_type_script = "uid://r8e3qm75qv2s"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(27.272728, 12.727272)
 
 [node name="Hacha" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_ngn37")
+proyectil = 5
+cadencia_ms = 900
+datos = SubResource("Resource_qaulx")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]

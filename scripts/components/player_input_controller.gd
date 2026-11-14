@@ -49,8 +49,6 @@ func presiono_ataque() -> bool:
 	return Input.is_action_just_pressed("attack")
 
 
-
-
 func esta_atacando() -> bool:
 	return Input.is_action_pressed("attack")
 

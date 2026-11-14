@@ -25,6 +25,7 @@ func morir() -> void:
 	_callbacks["limpiar_objetivos"].call()
 	_callbacks["desactivar_hitbox"].call()
 	_callbacks["reproducir_animacion"].call("fall_on_ground")
+	_callbacks["eliminar_arma"].call()
 
 
 func reiniciar() -> void:

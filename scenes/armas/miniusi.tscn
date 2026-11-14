@@ -2,13 +2,24 @@
 
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_p1bps"]
 [ext_resource type="Texture2D" uid="uid://83gbeb6rkvbv" path="res://assets/sprites/armas/miniusi.png" id="2_p1bps"]
+[ext_resource type="Script" uid="uid://c3bmnejsngmnq" path="res://scripts/misc/extra/datos_bala.gd" id="2_y5dym"]
+
+[sub_resource type="Resource" id="Resource_5tddr"]
+script = ExtResource("2_y5dym")
+automatica = true
+metadata/_custom_type_script = "uid://c3bmnejsngmnq"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(14, 14)
 
 [node name="Miniusi" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_p1bps")
+municion = 25
+dano = 3
+cadencia_ms = 80
+datos = SubResource("Resource_5tddr")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]

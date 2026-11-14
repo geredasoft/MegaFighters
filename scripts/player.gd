@@ -50,6 +50,8 @@ const ACELERACION_AIRE := 1200.0
  
 const FRICCION_SUELO := 2800.0 
 const FRICCION_AIRE := 400.0 
+
+const OFFSET_ARMA_X := 14.0
  
  
 # ========================================================= 
@@ -234,7 +236,10 @@ var damping_entorno := 0.0
 # VARIABLES - COMBATE 
 # ========================================================= 
  
-var velocidad_knockback: float = 0.0 
+var velocidad_knockback: float = 0.0
+@onready var sprite_arma: Sprite2D = $SpriteArma
+var arma_actual: ArmaParams = null
+var z_index_sprite_arma_original = 0
  
 # ========================================================= 
 # CICLO DE VIDA 
@@ -243,7 +248,9 @@ var velocidad_knockback: float = 0.0
 func _ready() -> void: 
  
 	add_to_group("Player") 
- 
+	
+	sprite_arma.visible = false
+	z_index_sprite_arma_original = sprite_arma.z_index
 	_controlador_ciclo_vida = PlayerLifecycleControllerScript.new(
 		self,
 		{
@@ -254,7 +261,8 @@ func _ready() -> void:
 			"reproducir_animacion": Callable(self, "reproducir_animacion"),
 			"reiniciar_vida": Callable(self, "reiniciar_vida"),
 			"limpiar_input_portal": Callable(_controlador_entrada, "limpiar_bloqueo_portal"),
-			"notificar_muerte": Callable(self, "_notificar_muerte")
+			"notificar_muerte": Callable(self, "_notificar_muerte"),
+			"eliminar_arma": Callable(self, "eliminar_arma"),
 		}
 	)
 	_controlador_ciclo_vida.establecer_posicion_inicial(global_position)
@@ -339,7 +347,8 @@ func _physics_process(delta: float) -> void:
 		Estado.MUERTO: 
 			_procesar_estado_muerto() 
  
-	move_and_slide() 
+	move_and_slide()
+	_actualizar_direccion_arma()
  
  
 # ========================================================= 
@@ -371,6 +380,21 @@ func _procesar_estado_roll_dive(delta: float) -> void:
 
 func actualizar_direccion_hitbox() -> void:
 	_controlador_combate.actualizar_direccion_hitbox()
+	_actualizar_direccion_arma()
+	
+func _actualizar_direccion_arma() -> void:
+	if arma_actual == null:
+		return
+
+	sprite_arma.flip_h = sprite.flip_h
+	if arma_actual.proyectil == ArmaParams.TipoProyectil.ARMA_BLANCA:
+		sprite_arma.rotation_degrees = -90
+	# una linea como la de abajo puede ser utilizada en caso el jugador o
+	# enemigo esté usando activamente el arma
+	# fuera de eso, lo preferible es que el arma no tenga offset
+	# sprite_arma.position.x = -OFFSET_ARMA_X if sprite.flip_h else OFFSET_ARMA_X
+	sprite_arma.z_index = 999 if estado_actual == Estado.ESCALANDO else z_index_sprite_arma_original
+	
 
 
 func _procesar_estado_ataque(delta: float) -> void:
@@ -613,3 +637,17 @@ func cambiar_gravedad(invertir: bool = true) -> void:
 func aplicar_damping(x: float = 0.0) -> void: 
  
 	damping_entorno = maxf(x, 0.0)
+
+# ========================================================= 
+# ARMAS
+# ========================================================= 
+ 
+func equipar_arma(params: ArmaParams) -> void:
+	arma_actual = params
+	sprite_arma.texture = params.textura
+	sprite_arma.visible = params.textura != null
+
+func eliminar_arma() -> void:
+	arma_actual = null
+	sprite_arma.texture = null
+	sprite_arma.visible = false

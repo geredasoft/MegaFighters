@@ -1,14 +1,26 @@
 [gd_scene format=3 uid="uid://pf687jbw7vke"]
 
 [ext_resource type="Script" uid="uid://bsec304ka5sfl" path="res://scripts/arma.gd" id="1_wpsa1"]
+[ext_resource type="Script" uid="uid://c3bmnejsngmnq" path="res://scripts/misc/extra/datos_bala.gd" id="2_j77a8"]
 [ext_resource type="Texture2D" uid="uid://dojwe15v0camu" path="res://assets/sprites/armas/m4a1.png" id="2_wpsa1"]
+
+[sub_resource type="Resource" id="Resource_kl2c7"]
+script = ExtResource("2_j77a8")
+automatica = true
+metadata/_custom_type_script = "uid://c3bmnejsngmnq"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80n4u"]
 size = Vector2(38.181816, 10.90909)
 
 [node name="M4A1" type="Area2D" unique_id=1672429170]
 scale = Vector2(1.2, 1.2)
+collision_mask = 6
 script = ExtResource("1_wpsa1")
+dos_manos = true
+municion = 30
+dano = 4
+cadencia_ms = 150
+datos = SubResource("Resource_kl2c7")
 metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]
