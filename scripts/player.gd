@@ -192,7 +192,7 @@ func _es_arma_cuerpo_a_cuerpo(nombre: String) -> bool:
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D 
 
 @onready var _controlador_portal = PlayerPortalControllerScript.new(
-	self, sprite, _controlador_entrada
+	self, sprite, _controlador_entrada, Callable(self, "_limpiar_knockback")
 )
 
 @onready var _controlador_animacion = SpriteAnimationControllerScript.new(sprite)
