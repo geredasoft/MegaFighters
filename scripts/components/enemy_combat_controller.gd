@@ -14,10 +14,12 @@ var _hitbox_active: bool = false
 var _frame_start: int
 var _frame_end: int
 var _damage: int
+var _damage_base: int
 var _horizontal_knockback: float
 var _vertical_knockback: float
 var _hitbox_offset_x: float
 var _hitbox_offset_y: float
+var _tamano_hitbox_original := Vector2.ZERO
 
 
 func _init(
@@ -40,10 +42,14 @@ func _init(
 	_frame_start = int(config["frame_start"])
 	_frame_end = int(config["frame_end"])
 	_damage = int(config["damage"])
+	_damage_base = _damage
 	_horizontal_knockback = float(config["horizontal_knockback"])
 	_vertical_knockback = float(config["vertical_knockback"])
 	_hitbox_offset_x = float(config["hitbox_offset_x"])
 	_hitbox_offset_y = float(config["hitbox_offset_y"])
+	if _collision_shape.shape is RectangleShape2D:
+		_collision_shape.shape = _collision_shape.shape.duplicate()
+		_tamano_hitbox_original = (_collision_shape.shape as RectangleShape2D).size
 
 
 func actualizar_ventana_ataque() -> void:
@@ -51,15 +57,36 @@ func actualizar_ventana_ataque() -> void:
 		desactivar_hitbox_ataque()
 		return
 
+	var tiene_melee := _enemy.get("textura_arma_cuerpo_a_cuerpo") is Texture2D
+	var frame_inicio := 2 if tiene_melee else _frame_start
+	var frame_fin := 5 if tiene_melee else _frame_end
+	_damage = _obtener_dano_ataque(tiene_melee)
+	if _collision_shape.shape is RectangleShape2D:
+		(_collision_shape.shape as RectangleShape2D).size = (
+			Vector2(32, 22) if tiene_melee else _tamano_hitbox_original
+		)
 	var golpe_activo: bool = (
-		_sprite.frame >= _frame_start
-		and _sprite.frame <= _frame_end
-	)
+			_sprite.frame >= frame_inicio
+			and _sprite.frame <= frame_fin
+		)
 	if golpe_activo:
 		activar_hitbox_ataque()
 		procesar_hurtboxes_superpuestas()
 	else:
 		desactivar_hitbox_ataque()
+
+
+func _obtener_dano_ataque(tiene_melee: bool) -> int:
+	if not tiene_melee:
+		return _damage_base
+	match String(_enemy.get("nombre_arma_cuerpo_a_cuerpo")).to_lower():
+		"hacha":
+			return 13
+		"sable":
+			return 10
+		"machete":
+			return 11
+	return _damage_base
 
 
 func activar_hitbox_ataque() -> void:

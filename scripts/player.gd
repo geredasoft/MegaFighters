@@ -27,6 +27,16 @@ const PlayerLifecycleControllerScript = preload(
 const PlayerPortalControllerScript = preload(
 	"res://scripts/components/player_portal_controller.gd"
 )
+const ProjectileWeaponControllerScript = preload(
+	"res://scripts/components/projectile_weapon_controller.gd"
+)
+const WeaponAnimationControllerScript = preload(
+	"res://scripts/components/weapon_animation_controller.gd"
+)
+const WeaponDropControllerScript = preload(
+	"res://scripts/components/weapon_drop_controller.gd"
+)
+const AimCursorScene: PackedScene = preload("res://scenes/aim_cursor.tscn")
  
 # ========================================================= 
 # SEÑALES 
@@ -34,6 +44,10 @@ const PlayerPortalControllerScript = preload(
  
 signal jugador_murio 
 signal solicitado_reiniciar 
+signal arma_recogida(textura: Texture2D, nombre: String, municion: int, capacidad: int)
+signal arma_cuerpo_a_cuerpo_recogida(textura: Texture2D, nombre: String)
+signal municion_cambiada(municion: int, capacidad: int)
+signal arma_perdida()
  
  
 # ========================================================= 
@@ -118,6 +132,58 @@ var estado_actual: Estado = Estado.NORMAL
 
 var _controlador_entrada = PlayerInputControllerScript.new()
 var _controlador_ciclo_vida
+var _controlador_disparo
+var _controlador_animacion_disparo
+var textura_arma_recogida: Texture2D
+var nombre_arma_recogida := ""
+var municion_actual := 0
+var municion_maxima := 0
+var textura_arma_cuerpo_a_cuerpo: Texture2D
+var nombre_arma_cuerpo_a_cuerpo := ""
+var _modo_apuntar := false
+var _disparo_pendiente_apuntado := false
+var _bloquear_disparo_este_frame := false
+var _cursor_apuntado: Node2D
+var _direccion_apuntado := Vector2.RIGHT
+var _disparo_presionado_anterior := false
+
+
+func recoger_arma(textura: Texture2D, nombre: String = "Arma") -> void:
+	if _es_arma_cuerpo_a_cuerpo(nombre):
+		textura_arma_cuerpo_a_cuerpo = textura
+		nombre_arma_cuerpo_a_cuerpo = nombre
+		arma_cuerpo_a_cuerpo_recogida.emit(textura, nombre)
+		return
+	if textura_arma_recogida != null:
+		_soltar_arma_de_fuego()
+	textura_arma_recogida = textura
+	nombre_arma_recogida = nombre
+	municion_maxima = ProjectileWeaponControllerScript.obtener_capacidad(nombre)
+	municion_actual = municion_maxima
+	arma_recogida.emit(textura, nombre, municion_actual, municion_maxima)
+	municion_cambiada.emit(municion_actual, municion_maxima)
+
+
+func _soltar_arma_de_fuego() -> void:
+	if nombre_arma_recogida.is_empty():
+		return
+	if _modo_apuntar:
+		_salir_modo_apuntar()
+	WeaponDropControllerScript.soltar(
+		self,
+		nombre_arma_recogida,
+		-1.0 if sprite.flip_h else 1.0
+	)
+	textura_arma_recogida = null
+	nombre_arma_recogida = ""
+	municion_actual = 0
+	municion_maxima = 0
+	arma_perdida.emit()
+
+
+func _es_arma_cuerpo_a_cuerpo(nombre: String) -> bool:
+	var nombre_normalizado := nombre.to_lower()
+	return nombre_normalizado in ["hacha", "sable", "machete"]
 
 # ========================================================= 
 # REFERENCIAS 
@@ -243,6 +309,8 @@ var velocidad_knockback: float = 0.0
 func _ready() -> void: 
  
 	add_to_group("Player") 
+	_controlador_disparo = ProjectileWeaponControllerScript.new(self)
+	_controlador_animacion_disparo = WeaponAnimationControllerScript.new(sprite)
  
 	_controlador_ciclo_vida = PlayerLifecycleControllerScript.new(
 		self,
@@ -305,6 +373,8 @@ func _physics_process(delta: float) -> void:
 	_aplicar_gravedad(delta) 
  
 	_aplicar_damping(delta) 
+	_actualizar_apuntado()
+	_procesar_disparo(delta)
 	 
 	# --------------------------------------------- 
 	# KNOCKBACK 
@@ -340,6 +410,167 @@ func _physics_process(delta: float) -> void:
 			_procesar_estado_muerto() 
  
 	move_and_slide() 
+
+
+func _procesar_disparo(delta: float) -> void:
+	if (
+		textura_arma_recogida == null
+		or municion_actual <= 0
+		or estado_actual == Estado.MUERTO
+		or estado_actual == Estado.ESCALANDO
+	):
+		return
+	var direccion := _direccion_apuntado if (_modo_apuntar or _disparo_pendiente_apuntado) else Vector2(
+		-1.0 if sprite.flip_h else 1.0,
+		0.0
+	)
+	var disparo_presionado := Input.is_action_pressed("shoot") or Input.is_key_pressed(KEY_C)
+	var mantener_disparo := _disparo_pendiente_apuntado or (
+		disparo_presionado
+		and not _modo_apuntar
+		and not _bloquear_disparo_este_frame
+	)
+	var disparo_realizado: bool = _controlador_disparo.procesar(
+		delta,
+		nombre_arma_recogida,
+		mantener_disparo,
+		direccion
+	)
+	if disparo_realizado and estado_actual == Estado.NORMAL:
+		_controlador_animacion_disparo.reproducir_disparo(
+			nombre_arma_recogida,
+			"PlayerPrincipal"
+		)
+	if disparo_realizado:
+		_disparo_pendiente_apuntado = false
+		municion_actual = maxi(municion_actual - 1, 0)
+		municion_cambiada.emit(municion_actual, municion_maxima)
+		if municion_actual <= 0:
+			_soltar_arma_de_fuego()
+
+
+func _actualizar_apuntado() -> void:
+	_bloquear_disparo_este_frame = false
+	if not _modo_apuntar and (textura_arma_recogida == null or municion_actual <= 0):
+		_disparo_presionado_anterior = Input.is_action_pressed("shoot") or Input.is_key_pressed(KEY_C)
+		return
+	var disparo_presionado := Input.is_action_pressed("shoot") or Input.is_key_pressed(KEY_C)
+	var paso_flecha := _obtener_flecha_pulsada()
+	if not _modo_apuntar:
+		# Como en Superfighters Deluxe: C + dirección entra en apuntado.
+		# Se conserva C para apuntar; soltarlo confirma el disparo.
+		var flecha_sostenida := _obtener_flechas_sostenidas()
+		if disparo_presionado and (paso_flecha != Vector2.ZERO or flecha_sostenida != Vector2.ZERO):
+			_entrar_modo_apuntar(paso_flecha if paso_flecha != Vector2.ZERO else flecha_sostenida)
+			_bloquear_disparo_este_frame = true
+		_disparo_presionado_anterior = disparo_presionado
+		return
+
+	if paso_flecha != Vector2.ZERO and disparo_presionado:
+		_ajustar_direccion_apuntado(paso_flecha)
+		_bloquear_disparo_este_frame = true
+	else:
+		_actualizar_posicion_cursor()
+
+	# El disparo se confirma al soltar C, usando el ángulo final de la mira.
+	if _disparo_presionado_anterior and not disparo_presionado:
+		_disparo_pendiente_apuntado = true
+		_salir_modo_apuntar()
+	_disparo_presionado_anterior = disparo_presionado
+
+
+func _obtener_flecha_pulsada() -> Vector2:
+	var direccion := Vector2.ZERO
+	if Input.is_action_just_pressed("ui_left"):
+		direccion.x -= 1.0
+	if Input.is_action_just_pressed("ui_right"):
+		direccion.x += 1.0
+	if Input.is_action_just_pressed("ui_up"):
+		direccion.y -= 1.0
+	if Input.is_action_just_pressed("ui_down"):
+		direccion.y += 1.0
+	return direccion
+
+
+func _obtener_flechas_sostenidas() -> Vector2:
+	var direccion := Vector2.ZERO
+	if Input.is_action_pressed("ui_left"):
+		direccion.x -= 1.0
+	if Input.is_action_pressed("ui_right"):
+		direccion.x += 1.0
+	if Input.is_action_pressed("ui_up"):
+		direccion.y -= 1.0
+	if Input.is_action_pressed("ui_down"):
+		direccion.y += 1.0
+	return direccion
+
+
+func _entrar_modo_apuntar(direccion_inicial: Vector2) -> void:
+	_modo_apuntar = true
+	var lado := -1.0 if sprite.flip_h else 1.0
+	if not is_zero_approx(direccion_inicial.x):
+		lado = signf(direccion_inicial.x)
+	var inclinacion := 0.0
+	if direccion_inicial.y < 0.0:
+		inclinacion = -0.16
+	elif direccion_inicial.y > 0.0:
+		inclinacion = 0.16
+	_direccion_apuntado = Vector2(lado * cos(inclinacion), sin(inclinacion))
+	_cursor_apuntado = AimCursorScene.instantiate() as Node2D
+	var escena := get_tree().current_scene
+	if escena == null:
+		_modo_apuntar = false
+		return
+	escena.add_child(_cursor_apuntado)
+	_actualizar_posicion_cursor()
+	_actualizar_orientacion_sprite(_direccion_apuntado)
+	_controlador_animacion_disparo.mostrar_pose_apuntado(
+		nombre_arma_recogida,
+		"PlayerPrincipal"
+	)
+
+
+func _salir_modo_apuntar() -> void:
+	_modo_apuntar = false
+	if is_instance_valid(_cursor_apuntado):
+		_cursor_apuntado.queue_free()
+	_cursor_apuntado = null
+
+
+func _ajustar_direccion_apuntado(paso: Vector2) -> void:
+	var lado := -1.0 if _direccion_apuntado.x < 0.0 else 1.0
+	if paso.x != 0.0:
+		lado = signf(paso.x)
+	var angulo := atan2(_direccion_apuntado.y, absf(_direccion_apuntado.x))
+	if paso.y < 0.0:
+		angulo -= 0.10
+	elif paso.y > 0.0:
+		angulo += 0.10
+	angulo = clampf(angulo, deg_to_rad(-78.0), deg_to_rad(78.0))
+	_direccion_apuntado = Vector2(lado * cos(angulo), sin(angulo)).normalized()
+	_actualizar_posicion_cursor()
+	_actualizar_orientacion_sprite(_direccion_apuntado)
+
+
+func _actualizar_posicion_cursor() -> void:
+	if not is_instance_valid(_cursor_apuntado):
+		return
+	var origen := global_position + Vector2(0.0, -12.0)
+	_cursor_apuntado.global_position = origen + _direccion_apuntado * 150.0
+
+
+func _actualizar_orientacion_sprite(direccion: Vector2) -> void:
+	if absf(direccion.x) > 0.05:
+		sprite.flip_h = direccion.x < 0.0
+	var direccion_local := Vector2(absf(direccion.x), direccion.y).normalized()
+	var angulo := direccion_local.angle()
+	if sprite.flip_h:
+		angulo = -angulo
+	sprite.rotation = clampf(
+		angulo,
+		deg_to_rad(-60.0),
+		deg_to_rad(60.0)
+	)
  
  
 # ========================================================= 
@@ -363,7 +594,70 @@ func _aplicar_damping(delta: float) -> void:
 # ========================================================= 
  
 func _procesar_estado_normal(delta: float) -> void:
+	if _bloquear_disparo_este_frame:
+		return
+	if _modo_apuntar:
+		velocity.x = move_toward(velocity.x, 0.0, FRICCION_SUELO * delta)
+		return
+	if (
+		is_on_floor()
+		and textura_arma_cuerpo_a_cuerpo != null
+		and Input.is_action_just_pressed("melee_attack")
+	):
+		_iniciar_ataque_cuerpo_a_cuerpo()
+		return
 	_controlador_movimiento.procesar_estado_normal(delta)
+
+
+func _iniciar_ataque_cuerpo_a_cuerpo() -> void:
+	if estado_actual != Estado.NORMAL:
+		return
+	if not _preparar_animacion_arma_cuerpo_a_cuerpo():
+		return
+	_controlador_animacion.configurar_bucle("melee_attack", false)
+	_controlador_combate.iniciar_ataque(
+		"melee_attack",
+		2,
+		5,
+		_obtener_dano_arma_cuerpo_a_cuerpo()
+	)
+
+
+func _obtener_dano_arma_cuerpo_a_cuerpo() -> int:
+	match nombre_arma_cuerpo_a_cuerpo.to_lower():
+		"hacha":
+			return 16
+		"sable":
+			return 12
+		"machete":
+			return 14
+	return DAÑO_ATAQUE
+
+
+func _preparar_animacion_arma_cuerpo_a_cuerpo() -> bool:
+	var nombre_normalizado := nombre_arma_cuerpo_a_cuerpo.to_lower()
+	if nombre_normalizado not in ["hacha", "sable", "machete"]:
+		return false
+	var nombre_carpeta := nombre_normalizado.capitalize()
+	var nombre_animacion := "melee_attack"
+	if sprite.sprite_frames.has_animation(nombre_animacion):
+		sprite.sprite_frames.remove_animation(nombre_animacion)
+	sprite.sprite_frames.add_animation(nombre_animacion)
+	sprite.sprite_frames.set_animation_speed(nombre_animacion, 10.0)
+	sprite.sprite_frames.set_animation_loop(nombre_animacion, false)
+	for numero in range(1, 9):
+		var ruta := "res://assets/sprites/weaponAttacks/atacar%s/atacar%sPlayerPrincipal/%s%d.png" % [
+			nombre_carpeta,
+			nombre_carpeta,
+			nombre_normalizado,
+			numero
+		]
+		var textura := load(ruta) as Texture2D
+		if textura == null:
+			push_warning("No se encontró el sprite de ataque: " + ruta)
+			return false
+		sprite.sprite_frames.add_frame(nombre_animacion, textura)
+	return true
 
 
 func _procesar_estado_roll_dive(delta: float) -> void:
@@ -470,6 +764,10 @@ func _actualizar_animacion_normal(
 	agachado: bool, 
 	corriendo: bool 
 ) -> void: 
+	if _controlador_animacion_disparo.esta_disparando():
+		return
+	# La inclinación solo pertenece a la pose de apuntado/disparo.
+	sprite.rotation = 0.0
 	_controlador_animacion.reproducir_locomocion(
 		is_on_floor(), direccion, agachado, corriendo
 	)
@@ -521,7 +819,7 @@ func _on_animation_finished() -> void:
 			if is_on_floor(): 
 				finalizar_roll_dive() 
  
-		"attack": 
+		"attack", "melee_attack": 
  
 			# El golpe terminó. 
 			terminar_ataque() 
@@ -541,6 +839,14 @@ func _on_animation_finished() -> void:
 			else: 
  
 				reproducir_animacion("standing") 
+
+		"shoot":
+			if estado_actual != Estado.MUERTO:
+				_actualizar_animacion_normal(
+					_obtener_input_horizontal(),
+					_controlador_entrada.esta_agachado(),
+					_esta_corriendo()
+				)
  
 # HITBOX DE ATAQUE 
 func _on_hitbox_ataque_area_entered(area: Area2D) -> void: 
