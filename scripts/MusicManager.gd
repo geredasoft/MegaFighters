@@ -9,7 +9,8 @@ func _ready():
 	reproductor = AudioStreamPlayer.new()
 	reproductor.stream = musica_niveles
 	reproductor.autoplay = false
-	reproductor.volume_db = -10
+	# Mantiene la música en segundo plano para que destaquen los efectos de armas.
+	reproductor.volume_db = -18
 	
 	add_child(reproductor)
 

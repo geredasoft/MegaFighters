@@ -362,6 +362,22 @@ func _ready() -> void:
 func _configurar_animaciones() -> void: 
 	_controlador_animacion.configurar_bucle("roll_dive", false)
 	_controlador_animacion.configurar_bucle("attack", false)
+	# El jugador no tenía la pose de cuerpo caído que sí usa el enemigo.
+	# Se crea desde su sprite de caída para que la muerte siempre sustituya
+	# la pose de disparo, incluso al morir dentro del agua.
+	var textura_caido := load(
+		"res://assets/sprites/caido/caidoPlayerPrincipal/downed.png"
+	) as Texture2D
+	if textura_caido != null:
+		var atlas_caido := AtlasTexture.new()
+		atlas_caido.atlas = textura_caido
+		atlas_caido.region = Rect2(0, 0, 19, 12)
+		if sprite.sprite_frames.has_animation("fall_on_ground"):
+			sprite.sprite_frames.remove_animation("fall_on_ground")
+		sprite.sprite_frames.add_animation("fall_on_ground")
+		sprite.sprite_frames.set_animation_speed("fall_on_ground", 5.0)
+		sprite.sprite_frames.set_animation_loop("fall_on_ground", true)
+		sprite.sprite_frames.add_frame("fall_on_ground", atlas_caido)
  
  
 # ========================================================= 
@@ -857,14 +873,15 @@ func _on_hitbox_ataque_area_entered(area: Area2D) -> void:
 		 
 func recibir_empuje( 
 	direccion: float, 
-	fuerza_vertical: float = FUERZA_KNOCKBACK_VERTICAL_ENEMY 
+	fuerza_vertical: float = FUERZA_KNOCKBACK_VERTICAL_ENEMY,
+	fuerza_horizontal: float = -1.0
 ) -> void: 
  
 	if estado_actual == Estado.MUERTO: 
 		return 
 	velocidad_knockback = _controlador_fisica.iniciar_knockback(
 		direccion,
-		FUERZA_KNOCKBACK_ENEMY,
+		FUERZA_KNOCKBACK_ENEMY if fuerza_horizontal < 0.0 else fuerza_horizontal,
 		fuerza_vertical
 	)
 
@@ -877,6 +894,7 @@ func _limpiar_knockback() -> void:
 # ========================================================= 
  
 func morir() -> void: 
+	sprite.rotation = 0.0
 	_controlador_ciclo_vida.morir()
 
 

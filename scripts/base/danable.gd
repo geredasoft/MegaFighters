@@ -39,7 +39,8 @@ func reiniciar() -> void
 @abstract
 func recibir_empuje(
 	direccion: float,
-	fuerza_vertical: float = -180.0
+	fuerza_vertical: float = -180.0,
+	fuerza_horizontal: float = -1.0
 ) -> void
 
 
