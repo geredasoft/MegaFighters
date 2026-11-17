@@ -9,6 +9,60 @@ extends Area2D
 # Clave: instance_id del cuerpo
 # Valor: tiempo en milisegundos
 var _bloqueos: Dictionary = {}
+var _posiciones_previas: Dictionary = {}
+
+# El área física puede no emitir body_entered si un cuerpo cruza toda su
+# anchura entre dos pasos de física. Esta tolerancia cubre el tamaño del actor.
+@export_category("Detección")
+@export var margen_deteccion: Vector2 = Vector2(12.0, 8.0)
+@export var distancia_muestreo: float = 4.0
+
+
+func _physics_process(_delta: float) -> void:
+	var viajeros_vistos: Dictionary = {}
+	var forma := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if forma == null or forma.shape == null or forma.disabled:
+		return
+
+	var limites := forma.shape.get_rect().grow_individual(
+		margen_deteccion.x,
+		margen_deteccion.y,
+		margen_deteccion.x,
+		margen_deteccion.y
+	)
+
+	for grupo in ["Player", "player", "enemy"]:
+		for candidato in get_tree().get_nodes_in_group(grupo):
+			if not candidato is Node2D or not is_instance_valid(candidato):
+				continue
+			var viajero := candidato as Node2D
+			var id := viajero.get_instance_id()
+			viajeros_vistos[id] = true
+			var posicion_actual := forma.to_local(viajero.global_position)
+			if _posiciones_previas.has(id):
+				var posicion_previa: Vector2 = _posiciones_previas[id]
+				if _segmento_interseca_rectangulo(posicion_previa, posicion_actual, limites):
+					_teletransportar(viajero)
+			else:
+				# Captura actores que aparezcan ya dentro del área.
+				if limites.has_point(posicion_actual):
+					_teletransportar(viajero)
+			if is_instance_valid(viajero):
+				_posiciones_previas[id] = forma.to_local(viajero.global_position)
+
+	for id in _posiciones_previas.keys():
+		if not viajeros_vistos.has(id):
+			_posiciones_previas.erase(id)
+
+
+func _segmento_interseca_rectangulo(origen: Vector2, destino: Vector2, limites: Rect2) -> bool:
+	var distancia := origen.distance_to(destino)
+	var pasos := maxi(1, ceili(distancia / maxf(distancia_muestreo, 1.0)))
+	for indice in range(pasos + 1):
+		var punto := origen.lerp(destino, float(indice) / float(pasos))
+		if limites.has_point(punto):
+			return true
+	return false
 
 
 # =========================================================
@@ -16,6 +70,10 @@ var _bloqueos: Dictionary = {}
 # =========================================================
 
 func _on_body_entered(body: Node2D) -> void:
+	_teletransportar(body)
+
+
+func _teletransportar(body: Node2D) -> void:
 
 	if not _es_viajero_valido(body):
 		return
@@ -70,7 +128,7 @@ func _on_body_entered(body: Node2D) -> void:
 
 	bloquear_cuerpo(
 		body,
-		tiempo_bloqueo_por_cuerpo
+		minf(tiempo_bloqueo_por_cuerpo, 0.08)
 	)
 
 	# También bloquearlo en el portal destino.
@@ -79,7 +137,7 @@ func _on_body_entered(body: Node2D) -> void:
 		otro_portal.call(
 			"bloquear_cuerpo",
 			body,
-			tiempo_bloqueo_por_cuerpo
+			minf(tiempo_bloqueo_por_cuerpo, 0.08)
 		)
 
 
