@@ -23,9 +23,13 @@ var _ground_acceleration: float
 var _ground_friction: float
 var _jump_force: float
 var _damage: int
+var _damage_base: int
 var _horizontal_knockback: float
 var _vertical_knockback: float
 var _hitbox_offset_x: float
+var _animacion_ataque_actual := "attack"
+var _frame_inicio_ataque_actual: int
+var _frame_fin_ataque_actual: int
 
 
 func _init(
@@ -59,9 +63,12 @@ func _init(
 	_ground_friction = float(config["ground_friction"])
 	_jump_force = float(config["jump_force"])
 	_damage = int(config["damage"])
+	_damage_base = _damage
 	_horizontal_knockback = float(config["horizontal_knockback"])
 	_vertical_knockback = float(config["vertical_knockback"])
 	_hitbox_offset_x = float(config["hitbox_offset_x"])
+	_frame_inicio_ataque_actual = _frame_start
+	_frame_fin_ataque_actual = _frame_end
 
 
 func procesar_estado_ataque(delta: float) -> void:
@@ -101,13 +108,13 @@ func procesar_estado_ataque(delta: float) -> void:
 
 
 func _actualizar_ventana_ataque() -> void:
-	if _sprite.animation != "attack":
+	if _sprite.animation != _animacion_ataque_actual:
 		desactivar_hitbox_ataque()
 		return
 
 	var golpe_activo: bool = (
-		_sprite.frame >= _frame_start
-		and _sprite.frame <= _frame_end
+		_sprite.frame >= _frame_inicio_ataque_actual
+		and _sprite.frame <= _frame_fin_ataque_actual
 	)
 	if golpe_activo != _hitbox_active:
 		print("ATAQUE | Frame: ", _sprite.frame, " | Hitbox: ", golpe_activo)
@@ -134,14 +141,23 @@ func desactivar_hitbox_ataque() -> void:
 	_hitbox_controller.desactivar()
 
 
-func iniciar_ataque() -> void:
+func iniciar_ataque(
+	animacion: String = "attack",
+	frame_inicio: int = -1,
+	frame_fin: int = -1,
+	dano: int = -1
+) -> void:
 	_set_attack_state.call()
+	_damage = _damage_base if dano < 0 else dano
+	_animacion_ataque_actual = animacion
+	_frame_inicio_ataque_actual = _frame_start if frame_inicio < 0 else frame_inicio
+	_frame_fin_ataque_actual = _frame_end if frame_fin < 0 else frame_fin
 	_player.velocity.x = 0.0
 	_attack_held = true
 	_hit_processor.limpiar_objetivos()
 	desactivar_hitbox_ataque()
 	_sprite.frame = 0
-	_play_animation.call("attack")
+	_play_animation.call(animacion)
 	print("⚔️ ATAQUE INICIADO")
 
 
@@ -149,6 +165,10 @@ func terminar_ataque() -> void:
 	desactivar_hitbox_ataque()
 	_attack_held = false
 	_hit_processor.limpiar_objetivos()
+	_damage = _damage_base
+	_animacion_ataque_actual = "attack"
+	_frame_inicio_ataque_actual = _frame_start
+	_frame_fin_ataque_actual = _frame_end
 
 
 func actualizar_direccion_hitbox() -> void:

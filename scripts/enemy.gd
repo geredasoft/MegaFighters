@@ -42,6 +42,15 @@ const EnemyLifecycleControllerScript = preload(
 const EnemyPortalControllerScript = preload(
 	"res://scripts/components/enemy_portal_controller.gd"
 )
+const ProjectileWeaponControllerScript = preload(
+	"res://scripts/components/projectile_weapon_controller.gd"
+)
+const WeaponAnimationControllerScript = preload(
+	"res://scripts/components/weapon_animation_controller.gd"
+)
+const WeaponDropControllerScript = preload(
+	"res://scripts/components/weapon_drop_controller.gd"
+)
 
 
 # =========================================================
@@ -200,7 +209,54 @@ enum Estado {
 	MUERTO
 }
 
+signal arma_recogida(textura: Texture2D, nombre: String, municion: int, capacidad: int)
+signal arma_cuerpo_a_cuerpo_recogida(textura: Texture2D, nombre: String)
+signal municion_cambiada(municion: int, capacidad: int)
+signal arma_perdida()
+
 var estado: Estado = Estado.PATRULLANDO
+var textura_arma_recogida: Texture2D
+var nombre_arma_recogida := ""
+var municion_actual := 0
+var municion_maxima := 0
+var textura_arma_cuerpo_a_cuerpo: Texture2D
+var nombre_arma_cuerpo_a_cuerpo := ""
+
+
+func recoger_arma(textura: Texture2D, nombre: String = "Arma") -> void:
+	var nombre_normalizado := nombre.to_lower()
+	if nombre_normalizado in ["hacha", "sable", "machete"]:
+		textura_arma_cuerpo_a_cuerpo = textura
+		nombre_arma_cuerpo_a_cuerpo = nombre
+		arma_cuerpo_a_cuerpo_recogida.emit(textura, nombre)
+		return
+	if textura_arma_recogida != null:
+		_soltar_arma_de_fuego()
+	textura_arma_recogida = textura
+	nombre_arma_recogida = nombre
+	municion_maxima = ProjectileWeaponControllerScript.obtener_capacidad(nombre)
+	municion_actual = municion_maxima
+	arma_recogida.emit(textura, nombre, municion_actual, municion_maxima)
+	municion_cambiada.emit(municion_actual, municion_maxima)
+
+
+func _soltar_arma_de_fuego() -> void:
+	if nombre_arma_recogida.is_empty():
+		return
+	WeaponDropControllerScript.soltar(
+		self,
+		nombre_arma_recogida,
+		-1.0 if sprite.flip_h else 1.0
+	)
+	textura_arma_recogida = null
+	nombre_arma_recogida = ""
+	municion_actual = 0
+	municion_maxima = 0
+	arma_perdida.emit()
+
+
+func tiene_arma_cuerpo_a_cuerpo() -> bool:
+	return textura_arma_cuerpo_a_cuerpo != null
 
 
 # =========================================================
@@ -218,6 +274,8 @@ var _controlador_ataque
 var _controlador_decisiones_estado
 var _controlador_ciclo_vida
 var _controlador_portal
+var _controlador_disparo
+var _controlador_animacion_disparo
 
 @onready var _controlador_separacion = EnemySeparationControllerScript.new(self)
 
@@ -277,6 +335,11 @@ var velocidad_knockback: float = 0.0
 # =========================================================
 
 func _ready() -> void:
+	# Cada enemigo mantiene sus animaciones propias; equipar un arma no
+	# debe cambiar los sprites de los demás enemigos.
+	sprite.sprite_frames = sprite.sprite_frames.duplicate(true) as SpriteFrames
+	_controlador_disparo = ProjectileWeaponControllerScript.new(self)
+	_controlador_animacion_disparo = WeaponAnimationControllerScript.new(sprite)
 
 	_sensor_entorno = EnemyWorldSensorScript.new(
 		self,
@@ -498,6 +561,8 @@ func _physics_process(delta: float) -> void:
 
 		buscar_jugador()
 
+	_procesar_disparo_ia(delta)
+
 	# -----------------------------------------------------
 	# IA
 	# -----------------------------------------------------
@@ -518,6 +583,45 @@ func _physics_process(delta: float) -> void:
 	# -----------------------------------------------------
 
 	move_and_slide()
+
+
+func _procesar_disparo_ia(delta: float) -> void:
+	var disparar := false
+	var direccion := Vector2.RIGHT
+	if (
+		estado not in [Estado.MUERTO, Estado.ATACANDO, Estado.ANTICIPANDO_ATAQUE]
+		and jugador != null
+		and is_instance_valid(jugador)
+		and not nombre_arma_recogida.is_empty()
+		and municion_actual > 0
+	):
+		var diferencia := jugador.global_position - global_position
+		var distancia := diferencia.length()
+		var melee_cercano := tiene_arma_cuerpo_a_cuerpo() and distancia <= 82.0
+		if (
+			distancia <= DISTANCIA_DETECCION
+			and absf(diferencia.y) <= DIFERENCIA_VERTICAL_MAXIMA
+			and not melee_cercano
+			and puede_ver_al_jugador()
+		):
+			direccion = diferencia.normalized()
+			_actualizar_orientacion_disparo(direccion)
+			disparar = true
+	var disparo_realizado: bool = _controlador_disparo.procesar(
+		delta,
+		nombre_arma_recogida,
+		disparar,
+		direccion
+	)
+	if disparo_realizado:
+		municion_actual = maxi(municion_actual - 1, 0)
+		municion_cambiada.emit(municion_actual, municion_maxima)
+		_controlador_animacion_disparo.reproducir_disparo(
+			nombre_arma_recogida,
+			"Player1"
+		)
+		if municion_actual <= 0:
+			_soltar_arma_de_fuego()
 
 
 # =========================================================
@@ -1088,9 +1192,26 @@ func _puede_perseguir_jugador() -> bool:
 func actualizar_animacion_movimiento(
 	corriendo: bool
 ) -> void:
+	if _controlador_animacion_disparo.esta_disparando():
+		return
+	sprite.rotation = 0.0
 	var direccion: float = signf(velocity.x) if absf(velocity.x) > 10.0 else 0.0
 	_controlador_animacion.reproducir_locomocion(
 		is_on_floor(), direccion, false, corriendo, true
+	)
+
+
+func _actualizar_orientacion_disparo(direccion: Vector2) -> void:
+	if absf(direccion.x) > 0.05:
+		sprite.flip_h = direccion.x < 0.0
+	var direccion_local := Vector2(absf(direccion.x), direccion.y).normalized()
+	var angulo := direccion_local.angle()
+	if sprite.flip_h:
+		angulo = -angulo
+	sprite.rotation = clampf(
+		angulo,
+		deg_to_rad(-60.0),
+		deg_to_rad(60.0)
 	)
 
 
@@ -1101,11 +1222,43 @@ func actualizar_animacion_movimiento(
 func reproducir_animacion(
 	nombre: String
 ) -> void:
+	if (
+		nombre != "attack"
+		and _controlador_animacion_disparo.esta_disparando()
+	):
+		return
+	if nombre == "attack" and tiene_arma_cuerpo_a_cuerpo():
+		if not _preparar_animacion_arma_cuerpo_a_cuerpo():
+			return
 	_controlador_animacion.reproducir(
 		nombre,
 		false,
 		false
 	)
+
+
+func _preparar_animacion_arma_cuerpo_a_cuerpo() -> bool:
+	var nombre_normalizado := nombre_arma_cuerpo_a_cuerpo.to_lower()
+	if nombre_normalizado not in ["hacha", "sable", "machete"]:
+		return false
+	var nombre_carpeta := nombre_normalizado.capitalize()
+	if sprite.sprite_frames.has_animation("attack"):
+		sprite.sprite_frames.clear("attack")
+		sprite.sprite_frames.set_animation_speed("attack", 10.0)
+		sprite.sprite_frames.set_animation_loop("attack", false)
+	for numero in range(1, 9):
+		var ruta := "res://assets/sprites/weaponAttacks/atacar%s/atacar%sPlayer1/%s%d.png" % [
+			nombre_carpeta,
+			nombre_carpeta,
+			nombre_normalizado,
+			numero
+		]
+		var textura := load(ruta) as Texture2D
+		if textura == null:
+			push_warning("No se encontró el sprite de ataque: " + ruta)
+			return false
+		sprite.sprite_frames.add_frame("attack", textura)
+	return true
 
 
 # =========================================================

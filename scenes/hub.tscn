@@ -13,6 +13,18 @@ border_color = Color(0.5662981, 0.56629825, 0.56629795, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d1od2"]
 bg_color = Color(0.05684849, 0.4109395, 3.85046e-06, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_weapon_frame"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 1)
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+
 [node name="Hub" type="CanvasLayer" unique_id=1506832321]
 script = ExtResource("1_qssp3")
 
@@ -48,8 +60,23 @@ vertical_alignment = 1
 [node name="ProgressBarPlayer" type="ProgressBar" parent="Control/MarginContainerPlayer/HBoxContainer" unique_id=1996081654]
 custom_minimum_size = Vector2(160, 16)
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_styles/background = SubResource("StyleBoxFlat_qssp3")
 theme_override_styles/fill = SubResource("StyleBoxFlat_d1od2")
+
+[node name="IconoArmaPlayer" type="PanelContainer" parent="Control/MarginContainerPlayer/HBoxContainer"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_weapon_frame")
+visible = false
+
+[node name="Icono" type="TextureRect" parent="Control/MarginContainerPlayer/HBoxContainer/IconoArmaPlayer"]
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 1
+expand_mode = 1
+stretch_mode = 5
 
 [node name="MarginContainerEnemigos" type="MarginContainer" parent="Control" unique_id=2055121923]
 layout_mode = 1
