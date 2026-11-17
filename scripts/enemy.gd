@@ -1224,6 +1224,7 @@ func reproducir_animacion(
 ) -> void:
 	if (
 		nombre != "attack"
+		and estado != Estado.MUERTO
 		and _controlador_animacion_disparo.esta_disparando()
 	):
 		return
@@ -1266,6 +1267,7 @@ func _preparar_animacion_arma_cuerpo_a_cuerpo() -> bool:
 # =========================================================
 
 func morir() -> void:
+	sprite.rotation = 0.0
 	_controlador_ciclo_vida.morir()
 
 
@@ -1292,14 +1294,15 @@ func reiniciar() -> void:
 
 func recibir_empuje(
 	direccion: float,
-	fuerza_vertical: float = FUERZA_KNOCKBACK_VERTICAL
+	fuerza_vertical: float = FUERZA_KNOCKBACK_VERTICAL,
+	fuerza_horizontal: float = -1.0
 ) -> void:
 
 	if esta_muerto():
 		return
 	velocidad_knockback = _controlador_fisica.iniciar_knockback(
 		direccion,
-		FUERZA_KNOCKBACK_HORIZONTAL,
+		FUERZA_KNOCKBACK_HORIZONTAL if fuerza_horizontal < 0.0 else fuerza_horizontal,
 		fuerza_vertical
 	)
 	if is_zero_approx(velocidad_knockback):

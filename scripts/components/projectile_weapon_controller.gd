@@ -2,6 +2,17 @@ extends RefCounted
 
 const PROJECTILE_SCENE: PackedScene = preload("res://scenes/bala.tscn")
 
+const SONIDOS_ARMAS := {
+	"usp": preload("res://assets/audio/Usp.mp3"),
+	"desert": preload("res://assets/audio/Desert.mp3"),
+	"escopeta": preload("res://assets/audio/Escopeta.mp3"),
+	"m4a1": preload("res://assets/audio/M4a1.mp3"),
+	"miniusi": preload("res://assets/audio/Miniusi.mp3"),
+	"snyper": preload("res://assets/audio/Snyper.mp3"),
+	"basuca": preload("res://assets/audio/Basuca.mp3"),
+	"lanzallamas": preload("res://assets/audio/Lanzallamas.mp3")
+}
+
 const CONFIGURACION_ARMAS := {
 	"usp": {
 		"bala": "res://assets/sprites/balas/BalasUsp.png",
@@ -122,5 +133,22 @@ func procesar(
 			float(configuracion["escala"])
 		)
 		escena.call_deferred("add_child", bala)
+	_reproducir_sonido(clave, escena)
 	_tiempo_hasta_disparo = float(configuracion["cadencia"])
 	return true
+
+
+func _reproducir_sonido(clave: String, escena: Node) -> void:
+	var sonido := SONIDOS_ARMAS.get(clave) as AudioStream
+	if sonido == null:
+		return
+	# Un reproductor por disparo permite que las armas rápidas y los disparos
+	# simultáneos del jugador y los enemigos no se corten entre sí.
+	var reproductor := AudioStreamPlayer2D.new()
+	reproductor.stream = sonido
+	reproductor.volume_db = -4.0 if clave == "basuca" or clave == "snyper" else -7.0
+	reproductor.max_distance = 1200.0
+	reproductor.finished.connect(reproductor.queue_free)
+	escena.add_child(reproductor)
+	reproductor.global_position = _dueno.global_position
+	reproductor.play()

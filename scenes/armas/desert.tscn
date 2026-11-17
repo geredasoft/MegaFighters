@@ -13,9 +13,7 @@ metadata/_edit_group_ = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=951116682]
 texture_filter = 1
-scale = Vector2(2, 2)
 texture = ExtResource("2_f5ogq")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1504212935]
-scale = Vector2(2, 2)
 shape = SubResource("RectangleShape2D_80n4u")

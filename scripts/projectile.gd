@@ -68,7 +68,8 @@ func _al_entrar_en_area(area: Area2D) -> void:
 	if objetivo == null or not is_instance_valid(objetivo):
 		return
 	objetivo.recibir_dano(_dano, _dueno)
-	objetivo.recibir_empuje(signf(_direccion.x) * _empuje, -35.0)
+	# Las balas interrumpen el movimiento con un impacto ligero, según el arma.
+	objetivo.recibir_empuje(signf(_direccion.x), -20.0, _empuje * 0.35)
 	queue_free()
 
 
