@@ -47,5 +47,3 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 text = "Salir "
 script = ExtResource("3_iep14")
-
-[connection signal="pressed" from="Panel/VBoxContainer/Salir" to="Panel/VBoxContainer/Salir" method="_on_pressed"]

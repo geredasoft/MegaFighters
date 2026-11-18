@@ -1,8 +1,14 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bmx87pnhvop4i"]
 
-[node name="EscenaFinalRescate" type="Node2D"]
+[ext_resource type="VideoStream" uid="uid://0dopekrk3mmx" path="res://assets/cutscenes/ending.ogv" id="1_3a8u1"]
+[ext_resource type="Script" uid="uid://dvv8wcewph2c8" path="res://scripts/escena_final_rescate.gd" id="1_qnjik"]
 
-[node name="Control" type="Control" parent="."]
+[node name="EscenaFinalRescate" type="Node2D" unique_id=845688628]
+script = ExtResource("1_qnjik")
+
+[node name="Control" type="Control" parent="." unique_id=1126959702]
+propagate_maximum_size = true
+clip_contents = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,19 +16,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Mensaje" type="Label" parent="Control"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -20.0
-offset_right = 200.0
-offset_bottom = 20.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Escena de rescate por editar"
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="." unique_id=1975345004]
+stream = ExtResource("1_3a8u1")
+autoplay = true
