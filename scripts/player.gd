@@ -37,6 +37,7 @@ const WeaponDropControllerScript = preload(
 	"res://scripts/components/weapon_drop_controller.gd"
 )
 const AimCursorScene: PackedScene = preload("res://scenes/aim_cursor.tscn")
+const BotiquinScene: PackedScene = preload("res://scenes/botiquin.tscn")
  
 # ========================================================= 
 # SEÑALES 
@@ -146,6 +147,24 @@ var _bloquear_disparo_este_frame := false
 var _cursor_apuntado: Node2D
 var _direccion_apuntado := Vector2.RIGHT
 var _disparo_presionado_anterior := false
+var _botiquin_activo: Node2D
+var _temporizador_botiquin := 0.0
+
+
+func _process(delta: float) -> void:
+	if is_instance_valid(_botiquin_activo):
+		return
+	_temporizador_botiquin -= delta
+	if _temporizador_botiquin > 0.0:
+		return
+	_temporizador_botiquin = 0.5
+	if esta_muerto() or vida_actual * 2 >= vida_maxima or not is_on_floor():
+		return
+
+	_botiquin_activo = BotiquinScene.instantiate() as Node2D
+	var direccion := -1.0 if randf() < 0.5 else 1.0
+	get_tree().current_scene.add_child(_botiquin_activo)
+	_botiquin_activo.global_position = global_position + Vector2(direccion * 48.0, 8.0)
 
 
 func recoger_arma(textura: Texture2D, nombre: String = "Arma") -> void:

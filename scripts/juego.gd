@@ -26,7 +26,7 @@ var _vista_mensaje
 
 @export var escena_siguiente: PackedScene
 @export_multiline var mensaje_victoria: String = (
-	"¡NIVEL 1 COMPLETADO!\n\nPresiona ENTER para continuar al Nivel 2."
+	"¡NIVEL 1 COMPLETADO!\n\nPresione ENTER para pasar al Nivel 2."
 )
 @export_range(0.0, 60.0, 0.5) var espera_transicion_victoria: float = 0.0
 

@@ -41,6 +41,13 @@
 [ext_resource type="PackedScene" uid="uid://cqdfweb16n405" path="res://scenes/hub.tscn" id="39_p60g2"]
 [ext_resource type="PackedScene" path="res://scenes/escena_final_rescate.tscn" id="40_final"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_MessageBackground"]
+bg_color = Color(0, 0, 0, 0.65)
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_sodyg"]
 atlas = ExtResource("15_mgoay")
 region = Rect2(0, 0, 19, 12)
@@ -300,8 +307,8 @@ offset_right = 1151.0
 offset_bottom = 648.0
 
 [node name="CenterContainer" type="CenterContainer" parent="Control" unique_id=1209313425]
-custom_minimum_size = Vector2(186, 55)
-custom_maximum_size = Vector2(186, 55)
+custom_minimum_size = Vector2(700, 160)
+custom_maximum_size = Vector2(900, 220)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -317,6 +324,7 @@ Pulse 'R' para reiniciar"
 fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_styles/normal = SubResource("StyleBoxFlat_MessageBackground")
 script = ExtResource("1_aqyt2")
 jugador = NodePath("../../../Player")
 enemy_spawner = NodePath("../../../EnemySpawner")

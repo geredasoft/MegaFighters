@@ -8,7 +8,7 @@ func _init(etiqueta: RichTextLabel) -> void:
 
 
 func mostrar_derrota() -> void:
-	_etiqueta.text = "Juego terminado\n\nPresiona R para reiniciar."
+	_etiqueta.text = "Ha muerto\nPresione R para reiniciar"
 	_etiqueta.show()
 
 
