@@ -68,8 +68,10 @@ func _al_entrar_en_area(area: Area2D) -> void:
 	if objetivo == null or not is_instance_valid(objetivo):
 		return
 	objetivo.recibir_dano(_dano, _dueno)
-	# Las balas interrumpen el movimiento con un impacto ligero, según el arma.
-	objetivo.recibir_empuje(signf(_direccion.x), -20.0, _empuje * 0.35)
+	# Las balas no deben bloquear los controles del jugador: las armas automáticas
+	# pueden encadenar impactos y mantener activo el knockback continuamente.
+	if not objetivo.is_in_group("Player"):
+		objetivo.recibir_empuje(signf(_direccion.x), -20.0, _empuje * 0.35)
 	queue_free()
 
 

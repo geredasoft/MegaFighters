@@ -535,7 +535,6 @@ direccion = 1
 distancia = 180.0
 
 [node name="EnemySpawner" type="Node2D" parent="." unique_id=490894253]
-visible = false
 script = ExtResource("36_tonsb")
 
 [node name="SpawnPoint1" type="Marker2D" parent="EnemySpawner" unique_id=37766033]
@@ -575,7 +574,6 @@ shape = SubResource("RectangleShape2D_53mwi")
 one_way_collision_direction = Vector2(0, -1)
 
 [node name="PuntosArmas" type="Node2D" parent="." unique_id=1674541688]
-visible = false
 script = ExtResource("38_huegp")
 
 [node name="Spawn1" type="Marker2D" parent="PuntosArmas" unique_id=1979380759]
@@ -603,7 +601,6 @@ position = Vector2(911, 237)
 position = Vector2(976, 507)
 
 [node name="Hub" parent="." unique_id=1506832321 node_paths=PackedStringArray("jugador", "enemy_spawner") instance=ExtResource("39_p60g2")]
-visible = false
 jugador = NodePath("../Player")
 enemy_spawner = NodePath("../EnemySpawner")
 
