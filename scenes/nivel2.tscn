@@ -41,6 +41,13 @@
 [ext_resource type="PackedScene" uid="uid://cqdfweb16n405" path="res://scenes/hub.tscn" id="39_p60g2"]
 [ext_resource type="PackedScene" uid="uid://cc6m3d5ru5wh2" path="res://scenes/nivel3.tscn" id="40_nivel3"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_MessageBackground"]
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+bg_color = Color(0, 0, 0, 0.65)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_sodyg"]
 atlas = ExtResource("15_mgoay")
 region = Rect2(0, 0, 19, 12)
@@ -255,8 +262,8 @@ offset_right = 1151.0
 offset_bottom = 648.0
 
 [node name="CenterContainer" type="CenterContainer" parent="Control" unique_id=1209313425]
-custom_minimum_size = Vector2(186, 55)
-custom_maximum_size = Vector2(186, 55)
+custom_minimum_size = Vector2(700, 160)
+custom_maximum_size = Vector2(900, 220)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -267,6 +274,7 @@ grow_vertical = 2
 [node name="Mensajes" type="RichTextLabel" parent="Control/CenterContainer" unique_id=1003891864 node_paths=PackedStringArray("jugador", "enemy_spawner")]
 z_index = 4096
 layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_MessageBackground")
 text = "Juego terminado
 Pulse 'R' para reiniciar"
 fit_content = true
@@ -278,7 +286,7 @@ enemy_spawner = NodePath("../../../EnemySpawner")
 escena_siguiente = ExtResource("40_nivel3")
 mensaje_victoria = "¡NIVEL 2 COMPLETADO!
 
-Presiona ENTER para continuar al Nivel 3."
+Presione ENTER para pasar al Nivel 3."
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=153010119]
 texture_filter = 1
@@ -491,25 +499,19 @@ metadata/_edit_group_ = true
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Paredes/p7" unique_id=401540992]
 shape = SubResource("RectangleShape2D_3w3fo")
 
-[node name="Portal1" parent="." unique_id=1961145753 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
-position = Vector2(1081, 264)
+[node name="Portal1" parent="." unique_id=1851884324 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
+position = Vector2(1125, 230)
 otro_portal = NodePath(".")
-
-[node name="CollisionShape2D" parent="Portal1" index="0" unique_id=1639346159]
-position = Vector2(42, -33)
 
 [node name="SpawnPoint" parent="Portal1" index="1" unique_id=2108312081]
-position = Vector2(22, 84)
+position = Vector2(-65, 116)
 
-[node name="Portal2" parent="." unique_id=755507736 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
-position = Vector2(1082, 473)
+[node name="Portal2" parent="." unique_id=325389332 node_paths=PackedStringArray("otro_portal") instance=ExtResource("33_1vwoq")]
+position = Vector2(1127, 332)
 otro_portal = NodePath(".")
 
-[node name="CollisionShape2D" parent="Portal2" index="0" unique_id=1639346159]
-position = Vector2(41, -138)
-
 [node name="SpawnPoint" parent="Portal2" index="1" unique_id=2108312081]
-position = Vector2(23, -228)
+position = Vector2(-45, -93)
 
 [node name="Escalera1" parent="." unique_id=997264052 instance=ExtResource("34_7758k")]
 position = Vector2(64, 208)
@@ -533,6 +535,7 @@ direccion = 1
 distancia = 180.0
 
 [node name="EnemySpawner" type="Node2D" parent="." unique_id=490894253]
+visible = false
 script = ExtResource("36_tonsb")
 
 [node name="SpawnPoint1" type="Marker2D" parent="EnemySpawner" unique_id=37766033]
@@ -572,6 +575,7 @@ shape = SubResource("RectangleShape2D_53mwi")
 one_way_collision_direction = Vector2(0, -1)
 
 [node name="PuntosArmas" type="Node2D" parent="." unique_id=1674541688]
+visible = false
 script = ExtResource("38_huegp")
 
 [node name="Spawn1" type="Marker2D" parent="PuntosArmas" unique_id=1979380759]
@@ -599,6 +603,7 @@ position = Vector2(911, 237)
 position = Vector2(976, 507)
 
 [node name="Hub" parent="." unique_id=1506832321 node_paths=PackedStringArray("jugador", "enemy_spawner") instance=ExtResource("39_p60g2")]
+visible = false
 jugador = NodePath("../Player")
 enemy_spawner = NodePath("../EnemySpawner")
 
