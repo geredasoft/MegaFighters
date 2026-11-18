@@ -1,11 +1,15 @@
 extends CanvasLayer
 
 const CANTIDAD_ENEMIGOS_UI := 5
-const ALTO_BARRA := 12.0
-const TAMANO_RETRATO := Vector2(42, 42)
-const TAMANO_ARMA := Vector2(28, 28)
+const ALTO_BARRA := 9.0
+const ALTO_FRANJA_HUD := 112.0
+const TAMANO_RETRATO := Vector2(34, 34)
+const TAMANO_ARMA := Vector2(22, 22)
 const COLOR_VERDE := Color("#54e878")
-const COLOR_NEGRO_TRANSPARENTE := Color(0.015, 0.02, 0.035, 0.84)
+const COLOR_NEGRO_TRANSPARENTE := Color(0.0, 0.0, 0.0, 1.0)
+const COLOR_FONDO_ICONO_HUD := Color("#713b3e")
+const COLOR_BORDE_ICONO_HUD := Color("#a35458")
+const COLOR_TEXTO_ICONO_HUD := Color("#fff0ed")
 
 @export var jugador: Danable
 @export var enemy_spawner: EnemySpawner
@@ -37,30 +41,39 @@ func _process(_delta: float) -> void:
 
 
 func _construir_hud() -> void:
+	var fondo_superior := ColorRect.new()
+	fondo_superior.name = "FondoNegroHUD"
+	fondo_superior.anchor_right = 1.0
+	fondo_superior.offset_bottom = ALTO_FRANJA_HUD
+	fondo_superior.color = Color(0.0, 0.0, 0.0, 0.58)
+	fondo_superior.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_control.add_child(fondo_superior)
+	_control.move_child(fondo_superior, 0)
+
 	_panel_principal = PanelContainer.new()
 	_panel_principal.name = "PanelHUDSuperior"
 	_panel_principal.anchor_right = 1.0
-	_panel_principal.offset_left = 18.0
-	_panel_principal.offset_right = -18.0
-	_panel_principal.offset_top = 12.0
-	_panel_principal.offset_bottom = 148.0
+	_panel_principal.offset_left = 24.0
+	_panel_principal.offset_right = -24.0
+	_panel_principal.offset_top = 8.0
+	_panel_principal.offset_bottom = ALTO_FRANJA_HUD - 8.0
 	_panel_principal.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_panel_principal.add_theme_stylebox_override("panel", _estilo_panel(
-		COLOR_NEGRO_TRANSPARENTE, Color(0.32, 0.67, 1.0, 0.9), 1, 9
+		COLOR_NEGRO_TRANSPARENTE, Color(0.32, 0.67, 1.0, 0.9), 1, 6
 	))
 	_control.add_child(_panel_principal)
 
 	var margen := MarginContainer.new()
-	margen.add_theme_constant_override("margin_left", 8)
-	margen.add_theme_constant_override("margin_right", 8)
-	margen.add_theme_constant_override("margin_top", 7)
-	margen.add_theme_constant_override("margin_bottom", 7)
+	margen.add_theme_constant_override("margin_left", 5)
+	margen.add_theme_constant_override("margin_right", 5)
+	margen.add_theme_constant_override("margin_top", 3)
+	margen.add_theme_constant_override("margin_bottom", 3)
 	_panel_principal.add_child(margen)
 
 	_rejilla = GridContainer.new()
 	_rejilla.columns = 6
 	_rejilla.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_rejilla.add_theme_constant_override("h_separation", 5)
+	_rejilla.add_theme_constant_override("h_separation", 4)
 	margen.add_child(_rejilla)
 
 	_construir_tarjeta_player()
@@ -72,30 +85,30 @@ func _construir_hud() -> void:
 
 func _construir_tarjeta_base(titulo: String, acento: Color) -> Dictionary:
 	var tarjeta := PanelContainer.new()
-	tarjeta.custom_minimum_size = Vector2(165, 116)
+	tarjeta.custom_minimum_size = Vector2(165, 88)
 	tarjeta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tarjeta.add_theme_stylebox_override("panel", _estilo_panel(
-		Color(0.04, 0.055, 0.08, 0.58), acento, 1, 6
+		Color.BLACK, acento, 1, 6
 	))
 	_rejilla.add_child(tarjeta)
 
 	var margen := MarginContainer.new()
 	for lado in ["left", "right", "top", "bottom"]:
-		margen.add_theme_constant_override("margin_" + lado, 6)
+		margen.add_theme_constant_override("margin_" + lado, 4)
 	tarjeta.add_child(margen)
 
 	var columna := VBoxContainer.new()
-	columna.add_theme_constant_override("separation", 4)
+	columna.add_theme_constant_override("separation", 2)
 	margen.add_child(columna)
 
 	var encabezado := HBoxContainer.new()
-	encabezado.add_theme_constant_override("separation", 5)
+	encabezado.add_theme_constant_override("separation", 4)
 	columna.add_child(encabezado)
 
 	var etiqueta_titulo := Label.new()
 	etiqueta_titulo.text = titulo
 	etiqueta_titulo.add_theme_color_override("font_color", acento)
-	etiqueta_titulo.add_theme_font_size_override("font_size", 14)
+	etiqueta_titulo.add_theme_font_size_override("font_size", 11)
 	etiqueta_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	encabezado.add_child(etiqueta_titulo)
 
@@ -103,20 +116,26 @@ func _construir_tarjeta_base(titulo: String, acento: Color) -> Dictionary:
 	estado.text = "EN ESPERA"
 	estado.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	estado.add_theme_color_override("font_color", Color("#b4c2d4"))
-	estado.add_theme_font_size_override("font_size", 9)
+	estado.add_theme_font_size_override("font_size", 8)
 	encabezado.add_child(estado)
 
 	var cuerpo := HBoxContainer.new()
-	cuerpo.add_theme_constant_override("separation", 7)
+	cuerpo.add_theme_constant_override("separation", 5)
 	cuerpo.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	columna.add_child(cuerpo)
 
+	var marco_retrato := PanelContainer.new()
+	marco_retrato.custom_minimum_size = TAMANO_RETRATO
+	marco_retrato.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	marco_retrato.add_theme_stylebox_override("panel", _estilo_panel(
+		COLOR_FONDO_ICONO_HUD, COLOR_BORDE_ICONO_HUD, 1, 0
+	))
+	cuerpo.add_child(marco_retrato)
+
 	var retrato := TextureRect.new()
-	retrato.custom_minimum_size = TAMANO_RETRATO
-	retrato.size = TAMANO_RETRATO
 	retrato.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	retrato.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	cuerpo.add_child(retrato)
+	marco_retrato.add_child(retrato)
 
 	var datos := VBoxContainer.new()
 	datos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -145,7 +164,7 @@ func _construir_tarjeta_base(titulo: String, acento: Color) -> Dictionary:
 	marco_arma.custom_minimum_size = TAMANO_ARMA
 	marco_arma.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	marco_arma.add_theme_stylebox_override("panel", _estilo_panel(
-		Color.WHITE, Color.BLACK, 1, 3
+		COLOR_FONDO_ICONO_HUD, COLOR_BORDE_ICONO_HUD, 1, 0
 	))
 	marco_arma.visible = false
 	fila_arma.add_child(marco_arma)
@@ -159,7 +178,7 @@ func _construir_tarjeta_base(titulo: String, acento: Color) -> Dictionary:
 	marco_municion.custom_minimum_size = TAMANO_ARMA
 	marco_municion.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	marco_municion.add_theme_stylebox_override("panel", _estilo_panel(
-		Color.WHITE, Color.BLACK, 1, 3
+		COLOR_FONDO_ICONO_HUD, COLOR_BORDE_ICONO_HUD, 1, 0
 	))
 	marco_municion.visible = false
 	fila_arma.add_child(marco_municion)
@@ -168,7 +187,7 @@ func _construir_tarjeta_base(titulo: String, acento: Color) -> Dictionary:
 	contador_municion.text = "0"
 	contador_municion.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	contador_municion.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	contador_municion.add_theme_color_override("font_color", Color.BLACK)
+	contador_municion.add_theme_color_override("font_color", COLOR_TEXTO_ICONO_HUD)
 	contador_municion.add_theme_font_size_override("font_size", 13)
 	marco_municion.add_child(contador_municion)
 
@@ -176,7 +195,7 @@ func _construir_tarjeta_base(titulo: String, acento: Color) -> Dictionary:
 	texto_arma.text = "SIN ARMA"
 	texto_arma.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	texto_arma.add_theme_color_override("font_color", Color("#c7d0dc"))
-	texto_arma.add_theme_font_size_override("font_size", 9)
+	texto_arma.add_theme_font_size_override("font_size", 8)
 	fila_arma.add_child(texto_arma)
 
 	var fila_melee := HBoxContainer.new()
@@ -188,7 +207,7 @@ func _construir_tarjeta_base(titulo: String, acento: Color) -> Dictionary:
 	marco_melee.custom_minimum_size = TAMANO_ARMA
 	marco_melee.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	marco_melee.add_theme_stylebox_override("panel", _estilo_panel(
-		Color.WHITE, Color.BLACK, 1, 3
+		COLOR_FONDO_ICONO_HUD, COLOR_BORDE_ICONO_HUD, 1, 0
 	))
 	marco_melee.visible = false
 	fila_melee.add_child(marco_melee)

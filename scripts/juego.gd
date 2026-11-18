@@ -5,6 +5,7 @@ const GameFlowControllerScript = preload(
 	"res://scripts/components/game_flow_controller.gd"
 )
 const LevelMessageViewScript = preload("res://scripts/iu/level_message_view.gd")
+const CombatCameraScript = preload("res://scripts/combat_camera.gd")
 
 var _controlador_flujo
 var _vista_mensaje
@@ -36,6 +37,11 @@ var _vista_mensaje
 # =========================================================
 
 func _ready() -> void:
+	var camara_combate = CombatCameraScript.new()
+	camara_combate.name = "CombatCamera"
+	camara_combate.configurar(jugador, enemy_spawner)
+	get_tree().current_scene.call_deferred("add_child", camara_combate)
+
 	_vista_mensaje = LevelMessageViewScript.new(self)
 	_controlador_flujo = GameFlowControllerScript.new(
 		_vista_mensaje,
