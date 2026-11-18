@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://dkf17j17yjy3j"]
+
+[ext_resource type="Theme" uid="uid://dgdpytanpjgv5" path="res://resources/menu_estilo.tres" id="1_wy0kx"]
+[ext_resource type="Script" uid="uid://bduc0ae15i1fm" path="res://scripts/otra_vez.gd" id="2_mjjpl"]
+[ext_resource type="Script" uid="uid://d0cy3664gv1wp" path="res://scripts/iu/boton_salir.gd" id="3_mjjpl"]
+
+[node name="MenuFinal" type="Control" unique_id=447216164]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_wy0kx")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1893478951]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1306482439]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Titulo" type="RichTextLabel" parent="PanelContainer/VBoxContainer" unique_id=717314529]
+layout_mode = 2
+theme_type_variation = &"RichTextLabelType"
+text = "Juego completado"
+fit_content = true
+autowrap_mode = 0
+
+[node name="Gracias" type="RichTextLabel" parent="PanelContainer/VBoxContainer" unique_id=1996134209]
+layout_mode = 2
+text = "Muchas gracias por jugar"
+fit_content = true
+autowrap_mode = 0
+horizontal_alignment = 1
+
+[node name="OtraVez" type="Button" parent="PanelContainer/VBoxContainer" unique_id=798851381]
+custom_minimum_size = Vector2(300, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("1_wy0kx")
+text = "Jugar de nuevo"
+script = ExtResource("2_mjjpl")
+
+[node name="Salir" type="Button" parent="PanelContainer/VBoxContainer" unique_id=1325467839]
+custom_minimum_size = Vector2(300, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("1_wy0kx")
+text = "Salir"
+script = ExtResource("3_mjjpl")
